@@ -6,7 +6,7 @@ from ECS.world_object import WorldObject
 
 @dataclass
 class World:
-
+    # Would be nice with sets insted of lists but then we would lose determensim
     _objects: dict[Entity, WorldObject]
     _entities: list[Entity]
     _entities_to_add: list[tuple[Entity, WorldObject]]
@@ -44,8 +44,10 @@ class World:
                     commands = f(obj, dt)
                     if commands is None:
                         continue
-                    for obj in commands.entities:
+                    for obj in commands.objects_to_add:
                         self.add_object(obj)
+                    for e in commands.entities_to_remove:
+                        self.remove_entity(e)
 
     def add_object(self, obj: WorldObject) -> Entity:
         self._no_more_systems = False
@@ -59,6 +61,10 @@ class World:
         self._entities_to_add.append((id, obj))
         return id
 
+    def remove_entity(self, e: Entity):
+        """Raises ValueError if the entity is not present."""
+        self._entities_to_remove.append(e)
+
     def _update_objects(self):
         while len(self._entities_to_add) > 0:
             id, obj = self._entities_to_add.pop()
@@ -69,6 +75,17 @@ class World:
             for t in self._types:
                 if isinstance(obj, t):
                     self._archetypes[t].append(id)
+
+        while len(self._entities_to_remove) > 0:
+            e = self._entities_to_remove.pop()
+            obj = self._objects.pop(e)
+            self._entities.remove(e)
+
+            for t in self._types:
+                if isinstance(obj, t):
+                    self._archetypes[t].remove(e)
+
+            del obj
 
     def get_objects(self):
         for id in self._entities:
