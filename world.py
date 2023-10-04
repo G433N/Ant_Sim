@@ -31,6 +31,8 @@ class Commands:
         return id
 
 
+
+
 @dataclass
 class World:
 
@@ -45,7 +47,7 @@ class World:
     _archetypes: dict[type, list[WorldObject]]
     _types: list[type]
 
-    def __init__(self) -> None:
+    def __init__(self, system: dict[type, list[System]], archetypes: dict[type, list[WorldObject]], types: list[type]) -> None:
         self._objects = dict()
 
         self._entities = list()
@@ -57,9 +59,9 @@ class World:
         self._next_id = Entity(0)
         self._no_more_systems = False
 
-        self._systems = dict()
-        self._archetypes = dict()
-        self._types = list()
+        self._systems = system
+        self._archetypes = archetypes
+        self._types = types
 
     def run(self, dt: float) -> None:
         self._update_objects()
@@ -84,16 +86,6 @@ class World:
         self._entities_to_add.append((id, obj))
         return id
 
-    def add_system[T: WorldObject](self, type: type[T], system: Callable[[T, float], Commands | None]):
-        # Make this enforced by the type system later
-        assert not self._no_more_systems, "Don't and system after objects"
-        if type in self._systems.keys():
-            self._systems[type].append(system)
-        else:
-            self._systems[type] = [system]
-            self._types.append(type)
-            self._archetypes[type] = []
-
     def _update_objects(self):
         while len(self._entities_to_add) > 0:
             id, obj = self._entities_to_add.pop()
@@ -108,3 +100,30 @@ class World:
     def get_objects(self):
         for id in self._entities:
             yield self._objects[id]
+
+class InitWorld:
+    _systems: dict[type, list[System]]
+    _types: list[type]
+    _archetypes: dict[type, list[WorldObject]]
+
+    def __init__(self) -> None:
+        self._systems = dict()
+        self._types = list()
+        self._archetypes = dict()
+
+    def compile(self) -> World:
+        world = World(
+            self._systems,
+            self._archetypes,
+            self._types,
+        )
+        del self
+        return world
+
+    def add_system[T: WorldObject](self, type: type[T], system: Callable[[T, float], Commands | None]):
+        if type in self._systems.keys():
+            self._systems[type].append(system)
+        else:
+            self._systems[type] = [system]
+            self._types.append(type)
+            self._archetypes[type] = []

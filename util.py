@@ -1,5 +1,11 @@
 import random
-from pygame import Vector2
+from pygame import Surface, Vector2, draw
+
+from world import WorldObject
+
+
+def draw_objects(screen: Surface, obj: WorldObject, dt: float):
+    draw.circle(screen, obj.color, obj.position, obj.radius)
 
 
 def random_vector(space: Vector2) -> Vector2:
