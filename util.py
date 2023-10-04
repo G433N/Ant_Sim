@@ -1,7 +1,8 @@
 import random
 from pygame import Surface, Vector2, draw
 
-from world import WorldObject
+from ECS.world_object import WorldObject
+
 
 
 def draw_objects(screen: Surface, obj: WorldObject, dt: float):

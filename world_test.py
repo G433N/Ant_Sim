@@ -1,7 +1,7 @@
 
 from pygame import Vector2
 from movment import Movment
-from world import Commands, World, WorldObject
+from ECS.world import Commands, World, WorldObject
 
 
 def f(obj: Movment, dt: float):

@@ -1,12 +1,10 @@
-
-
 from dataclasses import dataclass
-
 from pygame import Vector2
+from ECS.system import Command
+from ECS.world_object import WorldObject
 from ant import Ant
 from util import random_vector
 
-from world import Commands, WorldObject
 
 
 @dataclass
@@ -27,7 +25,7 @@ class AntNest(WorldObject):
 
 
 def update_ant_nest(world_size: Vector2, obj: AntNest, dt: float):
-    c = Commands()
+    c = Command()
     obj.timer += dt
     if obj.spawmed < obj.spawn and obj.timer > obj.time:
         c.add_object(

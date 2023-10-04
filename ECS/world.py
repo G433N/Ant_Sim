@@ -1,36 +1,7 @@
 from dataclasses import dataclass
-from typing import Any, Callable, NewType
-from pygame import Vector2
-
-Entity = NewType("Entity", int)
-TempEntity = NewType("TempEntity", int)
-type System = Callable[[Any, float], Commands | None]
-
-
-@dataclass
-class WorldObject:
-    position: Vector2
-    radius: float
-    color: str
-
-
-class Commands:
-    entities: list[WorldObject]
-    _entities_to_remove: list[Entity]
-    _next_id: TempEntity
-
-    def __init__(self) -> None:
-        self.entities = list()
-        self._entities_to_remove = list()
-        self._next_id = TempEntity(0)
-
-    def add_object(self, obj: WorldObject) -> TempEntity:
-        id = self._next_id
-        self._next_id = TempEntity(1 + id)
-        self.entities.append(obj)
-        return id
-
-
+from ECS.System import System
+from ECS.util import Entity
+from ECS.world_object import WorldObject
 
 
 @dataclass
@@ -100,30 +71,3 @@ class World:
     def get_objects(self):
         for id in self._entities:
             yield self._objects[id]
-
-class InitWorld:
-    _systems: dict[type, list[System]]
-    _types: list[type]
-    _archetypes: dict[type, list[WorldObject]]
-
-    def __init__(self) -> None:
-        self._systems = dict()
-        self._types = list()
-        self._archetypes = dict()
-
-    def compile(self) -> World:
-        world = World(
-            self._systems,
-            self._archetypes,
-            self._types,
-        )
-        del self
-        return world
-
-    def add_system[T: WorldObject](self, type: type[T], system: Callable[[T, float], Commands | None]):
-        if type in self._systems.keys():
-            self._systems[type].append(system)
-        else:
-            self._systems[type] = [system]
-            self._types.append(type)
-            self._archetypes[type] = []

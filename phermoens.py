@@ -1,5 +1,5 @@
 from pygame import Vector2
-from world import WorldObject
+from ECS.world import WorldObject
 
 
 class Phermone(WorldObject):
