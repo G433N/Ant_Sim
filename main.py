@@ -1,5 +1,5 @@
-from functools import partial
 import pygame
+from functools import partial
 from ECS.init_world import InitWorld
 from ECS.world_object import WorldObject
 from Objects.ant import Ant, update_ant
