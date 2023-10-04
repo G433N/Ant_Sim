@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from pygame import Vector2
+from ECS.util import NOT_INIT_ENTITY
 from Objects.Componets.movment import Movment
 from util import random_vector
 
@@ -10,12 +11,14 @@ class Ant(Movment):
     target: Vector2
 
     def __init__(self, positon: Vector2, target: Vector2) -> None:
+        self.id = NOT_INIT_ENTITY
         self.position = positon
         self.velocity = Vector2()
         self.acceleration = Vector2()
         self.color = "red"
         self.radius = 5
         self.target = target
+        
 
 
 def update_ant(world_size: Vector2, obj: Ant, dt: float):

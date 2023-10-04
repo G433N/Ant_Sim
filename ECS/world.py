@@ -15,10 +15,10 @@ class World:
     _next_id: Entity
     _no_more_systems: bool
     _systems: dict[type, list[System]]
-    _archetypes: dict[type, list[WorldObject]]
+    _archetypes: dict[type, list[Entity]]
     _types: list[type]
 
-    def __init__(self, system: dict[type, list[System]], archetypes: dict[type, list[WorldObject]], types: list[type]) -> None:
+    def __init__(self, system: dict[type, list[System]], archetypes: dict[type, list[Entity]], types: list[type]) -> None:
         self._objects = dict()
 
         self._entities = list()
@@ -37,8 +37,9 @@ class World:
     def run(self, dt: float) -> None:
         self._update_objects()
 
-        for t, objects in self._archetypes.items():
-            for obj in objects:
+        for t, entities in self._archetypes.items():
+            for e in entities:
+                obj = self._objects[e]
                 for f in self._systems[t]:
                     commands = f(obj, dt)
                     if commands is None:
@@ -54,6 +55,7 @@ class World:
         else:
             id = self._removed_entities.pop()
 
+        obj.id = id
         self._entities_to_add.append((id, obj))
         return id
 
@@ -66,7 +68,7 @@ class World:
 
             for t in self._types:
                 if isinstance(obj, t):
-                    self._archetypes[t].append(obj)
+                    self._archetypes[t].append(id)
 
     def get_objects(self):
         for id in self._entities:

@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from pygame import Vector2
 from ECS.system import Command
+from ECS.util import NOT_INIT_ENTITY
 from ECS.world_object import WorldObject
 from Objects.ant import Ant
 from util import random_vector
-
 
 
 @dataclass
@@ -15,6 +15,7 @@ class AntNest(WorldObject):
     spawn: int
 
     def __init__(self, position: Vector2):
+        self.id = NOT_INIT_ENTITY
         self.position = position
         self.radius = 25
         self.color = "black"

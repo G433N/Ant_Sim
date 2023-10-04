@@ -1,5 +1,6 @@
 from typing import Callable
 from ECS.system import Command, System
+from ECS.util import Entity
 from ECS.world import World
 from ECS.world_object import WorldObject
 
@@ -7,7 +8,7 @@ from ECS.world_object import WorldObject
 class InitWorld:
     _systems: dict[type, list[System]]
     _types: list[type]
-    _archetypes: dict[type, list[WorldObject]]
+    _archetypes: dict[type, list[Entity]]
 
     def __init__(self) -> None:
         self._systems = dict()
