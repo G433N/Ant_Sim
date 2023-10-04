@@ -29,7 +29,7 @@ def update_ant_nest(world_size: Vector2, obj: AntNest, dt: float):
     c = Command()
     obj.timer += dt
     if obj.spawmed < obj.spawn and obj.timer > obj.time:
-        c.add_object(
+        c.spawn(
             Ant(obj.position.copy(), random_vector(world_size)))
         obj.timer = obj.timer % obj.time
         obj.spawmed += 1

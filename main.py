@@ -1,6 +1,6 @@
 import pygame
 from functools import partial
-from ECS.init_world import InitWorld
+from ECS.init_world import SetUpWorld
 from ECS.world_object import WorldObject
 from Objects.ant import Ant, update_ant
 from Objects.ant_nest import AntNest, update_ant_nest
@@ -17,14 +17,14 @@ clock = pygame.time.Clock()
 dt: float = 0
 running = True
 
-world = InitWorld()
-world.add_system(AntNest, partial(update_ant_nest, WORLDSIZE))
-world.add_system(Ant, partial(update_ant, WORLDSIZE))
-world.add_system(Movment, update_movement)
-world.add_system(WorldObject, partial(draw_objects, screen))
+setup = SetUpWorld()
+setup.add_system(AntNest, partial(update_ant_nest, WORLDSIZE))
+setup.add_system(Ant, partial(update_ant, WORLDSIZE))
+setup.add_system(Movment, update_movement)
+setup.add_system(WorldObject, partial(draw_objects, screen))
 
-world = world.compile()
-world.add_object(AntNest(Vector2(500, 500)))
+world = setup.compile()
+world.spawn(AntNest(Vector2(500, 500)))
 
 while running:
     for event in pygame.event.get():

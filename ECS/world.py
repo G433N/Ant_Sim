@@ -6,14 +6,18 @@ from ECS.world_object import WorldObject
 
 @dataclass
 class World:
-    # Would be nice with sets insted of lists but then we would lose determensim
+    """
+    The ECS World holds all entites/objects and systems\n
+    Also controls all backend logic\n
+    Should not be created manually, use SetUpWorld class instead
+    """
+    # Would be nice with sets insted of lists but then we would lose determinism
     _objects: dict[Entity, WorldObject]
     _entities: list[Entity]
-    _entities_to_add: list[tuple[Entity, WorldObject]]
+    _spawn_queue: list[tuple[Entity, WorldObject]]
     _removed_entities: list[Entity]
-    _entities_to_remove: list[Entity]
+    _remove_queue: list[Entity]
     _next_id: Entity
-    _no_more_systems: bool
     _systems: dict[type, list[System]]
     _archetypes: dict[type, list[Entity]]
     _types: list[type]
@@ -22,19 +26,22 @@ class World:
         self._objects = dict()
 
         self._entities = list()
-        self._entities_to_add = list()
+        self._spawn_queue = list()
 
         self._removed_entities = list()
-        self._entities_to_remove = list()
+        self._remove_queue = list()
 
         self._next_id = Entity(0)
-        self._no_more_systems = False
 
         self._systems = system
         self._archetypes = archetypes
         self._types = types
 
     def run(self, dt: float) -> None:
+        """
+        Runs a frame (all system once on respective entities)\n 
+        dt is delta time since last run call
+        """
         self._update_objects()
 
         for t, entities in self._archetypes.items():
@@ -45,12 +52,16 @@ class World:
                     if commands is None:
                         continue
                     for obj in commands.objects_to_add:
-                        self.add_object(obj)
+                        self.spawn(obj)
                     for e in commands.entities_to_remove:
-                        self.remove_entity(e)
+                        self.queue_remove(e)
 
-    def add_object(self, obj: WorldObject) -> Entity:
-        self._no_more_systems = False
+    def spawn(self, obj: WorldObject) -> Entity:
+        """
+        Queues an entity to be added to the world\n
+        The entity gets added at the start of the next frame\n
+        Returns the entity id
+        """
         if len(self._removed_entities) == 0:
             id = self._next_id
             self._next_id = Entity(1 + id)
@@ -58,16 +69,23 @@ class World:
             id = self._removed_entities.pop()
 
         obj.id = id
-        self._entities_to_add.append((id, obj))
+        self._spawn_queue.append((id, obj))
         return id
 
-    def remove_entity(self, e: Entity):
-        """Raises ValueError if the entity is not present."""
-        self._entities_to_remove.append(e)
+    def queue_remove(self, id: Entity):
+        """
+        Queues a entity to be removed\n
+        The entity gets removed at the start of the next frame\n
+        Raises ValueError if the entity is not present.
+        """
+        self._remove_queue.append(id)
 
     def _update_objects(self):
-        while len(self._entities_to_add) > 0:
-            id, obj = self._entities_to_add.pop()
+        """
+        Private method that adds and removes all queued entities
+        """
+        while len(self._spawn_queue) > 0:
+            id, obj = self._spawn_queue.pop()
             assert not id in self._objects.keys()
             self._objects[id] = obj
             self._entities.append(id)
@@ -76,17 +94,20 @@ class World:
                 if isinstance(obj, t):
                     self._archetypes[t].append(id)
 
-        while len(self._entities_to_remove) > 0:
-            e = self._entities_to_remove.pop()
+        while len(self._remove_queue) > 0:
+            e = self._remove_queue.pop()
             obj = self._objects.pop(e)
             self._entities.remove(e)
 
             for t in self._types:
                 if isinstance(obj, t):
                     self._archetypes[t].remove(e)
-
             del obj
 
     def get_objects(self):
+        """
+        Methods to iterate through all objects in the world\n
+        to do stuff that are not currently possible with systems
+        """
         for id in self._entities:
             yield self._objects[id]

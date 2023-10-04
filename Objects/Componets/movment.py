@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from pygame import Vector2
-
 from ECS.world_object import WorldObject
 
 
