@@ -1,7 +1,7 @@
-
 from pygame import Vector2
+from ECS.init_world import InitWorld
+from ECS.world_object import WorldObject
 from Objects.Componets.movment import Movment
-from ECS.world import Commands, World, WorldObject
 
 
 def f(obj: Movment, dt: float):
@@ -13,15 +13,12 @@ def f(obj: Movment, dt: float):
 def g(obj: WorldObject, dt: float):
     print(g)
     print(obj)
-    c = Commands()
-
-    c.add_object(WorldObject(Vector2(), dt, str(type(obj))))
-    return c
 
 
-w = World()
-w.add_system("test", Movment, f)
-w.add_system("test2", WorldObject, g)
+w = InitWorld()
+w.add_system(Movment, f)
+w.add_system(WorldObject, g)
+w = w.compile()
 w.add_object(Movment(Vector2(), 5, "red", Vector2(), Vector2()))
 w.add_object(WorldObject(Vector2(), 5, "lol"))
 
