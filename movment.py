@@ -10,6 +10,7 @@ class Movment(WorldObject):
 
 
 def update_movement(obj: Movment, dt: float) -> None:
+    friction(obj)
     obj.velocity += obj.acceleration * dt
     obj.position += obj.velocity * dt
     obj.acceleration *= 0

@@ -15,7 +15,7 @@ def g(obj: WorldObject, dt: float):
     print(obj)
     c = Commands()
 
-    c.add_objects(WorldObject(Vector2(), dt, str(type(obj))))
+    c.add_object(WorldObject(Vector2(), dt, str(type(obj))))
     return c
 
 

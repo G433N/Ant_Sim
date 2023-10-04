@@ -1,11 +1,10 @@
+from functools import partial
 import pygame
-from ant import Ant
-from ant_nest import AntNest
-from movment import Movment, friction, update_movement
+from ant import Ant, update_ant
+from ant_nest import AntNest, update_ant_nest
 from pygame import Vector2, draw
-from util import random_vector
-
-from world import WorldObject
+from movment import Movment, update_movement
+from world import World
 
 SCREENSIZE = (1280, 720)
 WORLDSIZE = Vector2(SCREENSIZE)
@@ -17,12 +16,13 @@ clock = pygame.time.Clock()
 dt: float = 0
 running = True
 
-objects: list[WorldObject] = list()
+world = World()
 
-# for _ in range(100):
-#    objects.append(Ant(Vector2(), random_vector(WORLDSIZE)))
-objects.append(AntNest(Vector2(500, 500)))
-# objects.append(AntNest(Vector2(100, 700)))
+world.add_system(AntNest, partial(update_ant_nest, WORLDSIZE))
+world.add_system(Ant, partial(update_ant, WORLDSIZE))
+world.add_system(Movment, update_movement)
+
+world.add_object(AntNest(Vector2(500, 500)))
 
 while running:
     for event in pygame.event.get():
@@ -30,9 +30,16 @@ while running:
             running = False
 
     screen.fill("darkgreen")
+    world.run(dt)
 
-    for obj in objects:
+    for obj in world.get_objects():
+        draw.circle(screen, obj.color, obj.position, obj.radius)
 
+    pygame.display.flip()
+    dt = clock.tick(60) / 1000  # limits FPS to 60
+pygame.quit()
+
+"""
         if isinstance(obj, Movment):
             friction(obj)
             update_movement(obj, dt)
@@ -52,9 +59,4 @@ while running:
                     Ant(obj.position.copy(), random_vector(WORLDSIZE)))
                 obj.timer = obj.timer % obj.time
                 obj.spawmed += 1
-
-        draw.circle(screen, obj.color, obj.position, obj.radius)
-
-    pygame.display.flip()
-    dt = clock.tick(60) / 1000  # limits FPS to 60
-pygame.quit()
+"""

@@ -4,7 +4,7 @@ from pygame import Vector2
 
 Entity = NewType("Entity", int)
 TempEntity = NewType("TempEntity", int)
-type System = Callable[[Any, float], Commands|None]
+type System = Callable[[Any, float], Commands | None]
 
 
 @dataclass
@@ -24,7 +24,7 @@ class Commands:
         self._entities_to_remove = list()
         self._next_id = TempEntity(0)
 
-    def add_objects(self, obj: WorldObject) -> TempEntity:
+    def add_object(self, obj: WorldObject) -> TempEntity:
         id = self._next_id
         self._next_id = TempEntity(1 + id)
         self.entities.append(obj)
@@ -69,7 +69,7 @@ class World:
                 for f in self._systems[t]:
                     commands = f(obj, dt)
                     if commands is None:
-                        continue 
+                        continue
                     for obj in commands.entities:
                         self.add_object(obj)
 
@@ -81,11 +81,10 @@ class World:
         else:
             id = self._removed_entities.pop()
 
-
         self._entities_to_add.append((id, obj))
         return id
 
-    def add_system[T: WorldObject](self, name: str, type: type[T], system: Callable[[T, float], Commands|None]):
+    def add_system[T: WorldObject](self, type: type[T], system: Callable[[T, float], Commands | None]):
         # Make this enforced by the type system later
         assert not self._no_more_systems, "Don't and system after objects"
         if type in self._systems.keys():
@@ -101,7 +100,11 @@ class World:
             assert not id in self._objects.keys()
             self._objects[id] = obj
             self._entities.append(id)
-            
+
             for t in self._types:
                 if isinstance(obj, t):
                     self._archetypes[t].append(obj)
+
+    def get_objects(self):
+        for id in self._entities:
+            yield self._objects[id]

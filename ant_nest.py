@@ -3,8 +3,10 @@
 from dataclasses import dataclass
 
 from pygame import Vector2
+from ant import Ant
+from util import random_vector
 
-from world import WorldObject
+from world import Commands, WorldObject
 
 
 @dataclass
@@ -22,3 +24,14 @@ class AntNest(WorldObject):
         self.time = 1
         self.spawmed = 0
         self.spawn = 100
+
+
+def update_ant_nest(world_size: Vector2, obj: AntNest, dt: float):
+    c = Commands()
+    obj.timer += dt
+    if obj.spawmed < obj.spawn and obj.timer > obj.time:
+        c.add_object(
+            Ant(obj.position.copy(), random_vector(world_size)))
+        obj.timer = obj.timer % obj.time
+        obj.spawmed += 1
+        return c
