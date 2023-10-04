@@ -2,10 +2,10 @@ from functools import partial
 import pygame
 from ECS.init_world import InitWorld
 from ECS.world_object import WorldObject
-from ant import Ant, update_ant
-from ant_nest import AntNest, update_ant_nest
+from Objects.ant import Ant, update_ant
+from Objects.ant_nest import AntNest, update_ant_nest
 from pygame import Vector2
-from movment import Movment, update_movement
+from Objects.Componets.movment import Movment, update_movement
 from util import draw_objects
 
 SCREENSIZE = (1280, 720)

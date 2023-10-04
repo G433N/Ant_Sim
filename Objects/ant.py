@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from pygame import Vector2
-from movment import Movment
+from Objects.Componets.movment import Movment
 from util import random_vector
 
 

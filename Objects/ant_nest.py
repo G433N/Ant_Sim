@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from pygame import Vector2
 from ECS.system import Command
 from ECS.world_object import WorldObject
-from ant import Ant
+from Objects.ant import Ant
 from util import random_vector
 
 

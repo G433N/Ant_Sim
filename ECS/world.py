@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from ECS.System import System
+from ECS.system import System
 from ECS.util import Entity
 from ECS.world_object import WorldObject
 

@@ -1,6 +1,6 @@
 
 from pygame import Vector2
-from movment import Movment
+from Objects.Componets.movment import Movment
 from ECS.world import Commands, World, WorldObject
 
 
