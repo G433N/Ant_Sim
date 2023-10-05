@@ -3,7 +3,7 @@ from ECS.entity import NOT_INIT_ENTITY
 from ECS.world_generator import WorldGenerator
 from ECS.system import Command
 from Objects.Componets.world_object import WorldObject
-from Objects.Componets.movment import Movement
+from Objects.Componets.movement import Movement
 
 
 def f(obj: Movement, dt: float):

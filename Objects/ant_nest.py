@@ -11,7 +11,7 @@ from util import random_vector
 class AntNest(WorldObject):
     timer: float
     time: float
-    spawmed: int
+    spawned: int
     spawn: int
 
     def __init__(self, position: Vector2):
@@ -21,16 +21,16 @@ class AntNest(WorldObject):
         self.color = "black"
         self.timer = 0
         self.time = 1
-        self.spawmed = 0
+        self.spawned = 0
         self.spawn = 100
 
 
 def ant_nest_system(world_size: Vector2, obj: AntNest, dt: float):
     c = Command()
     obj.timer += dt
-    if obj.spawmed < obj.spawn and obj.timer > obj.time:
+    if obj.spawned < obj.spawn and obj.timer > obj.time:
         c.spawn(
             Ant(obj.position.copy(), random_vector(world_size)))
         obj.timer = obj.timer % obj.time
-        obj.spawmed += 1
+        obj.spawned += 1
         return c

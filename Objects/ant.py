@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from pygame import Vector2
 from ECS.entity import NOT_INIT_ENTITY
-from Objects.Componets.movment import Movement
+from Objects.Componets.movement import Movement
 from util import random_vector
 
 

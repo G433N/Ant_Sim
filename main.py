@@ -5,7 +5,7 @@ from Objects.Componets.world_object import WorldObject
 from Objects.ant import Ant, ant_system
 from Objects.ant_nest import AntNest, ant_nest_system
 from pygame import Vector2
-from Objects.Componets.movment import Movement, movement_system
+from Objects.Componets.movement import Movement, movement_system
 from util import draw_system
 
 SCREENSIZE = (1280, 720)
