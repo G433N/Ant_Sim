@@ -31,7 +31,6 @@ class Ant_Nets:
         self.spawned_ants.append(0)
 
     def update(self, dt: float):
-
         for i, position in enumerate(self.position):
             self.timer[i] += dt
             time = self.timer[i]
