@@ -1,8 +1,8 @@
 from pygame import Vector2
-from ECS.init_world import SetUpWorld
+from ECS.entity import NOT_INIT_ENTITY
+from ECS.world_generator import WorldGenerator
 from ECS.system import Command
-from ECS.util import NOT_INIT_ENTITY
-from ECS.world_object import WorldObject
+from Objects.Componets.world_object import WorldObject
 from Objects.Componets.movment import Movment
 
 
@@ -20,7 +20,7 @@ def g(obj: WorldObject, dt: float):
     print(obj)
 
 
-w = SetUpWorld()
+w = WorldGenerator()
 w.add_system(Movment, f)
 w.add_system(WorldObject, g)
 w = w.compile()

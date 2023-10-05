@@ -1,19 +1,18 @@
-from typing import Callable
-from ECS.system import Command, System
-from ECS.util import Entity
+from ECS.entity import EntityID
+from ECS.system import InternalSystem, System
 from ECS.world import World
-from ECS.world_object import WorldObject
+from Objects.Componets.world_object import WorldObject
 
 
-class SetUpWorld:
+class WorldGenerator:
     """
-    To create a ECS world you first to set up the world, \n
+    To create a ECS world you first generate world, \n
     by adding system to a this class. \n
     When you are done use 'compile()' to get your ECS world
     """
-    _systems: dict[type, list[System]]
+    _systems: dict[type, list[InternalSystem]]
     _types: list[type]
-    _archetypes: dict[type, list[Entity]]
+    _archetypes: dict[type, list[EntityID]]
 
     def __init__(self) -> None:
         self._systems = dict()
@@ -31,7 +30,7 @@ class SetUpWorld:
         )
         return world
 
-    def add_system[T: WorldObject](self, type: type[T], system: Callable[[T, float], Command | None]):
+    def add_system[T: WorldObject](self, type: type[T], system: System[T]):
         """
         Adds system of type T to the World.\n
         T should inherit from WorldObject, the second argument in the system is delta time since last frame.\n

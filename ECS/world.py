@@ -1,7 +1,6 @@
 from dataclasses import dataclass
-from ECS.system import System
-from ECS.util import Entity
-from ECS.world_object import WorldObject
+from ECS.entity import Entity, EntityID
+from ECS.system import InternalSystem
 
 
 @dataclass
@@ -9,20 +8,20 @@ class World:
     """
     The ECS World holds all entites/objects and systems\n
     Also controls all backend logic\n
-    Should not be created manually, use SetUpWorld class instead
+    Should not be created manually, use WorldGenerator class instead
     """
     # Would be nice with sets insted of lists but then we would lose determinism
-    _objects: dict[Entity, WorldObject]
-    _entities: list[Entity]
-    _spawn_queue: list[tuple[Entity, WorldObject]]
-    _removed_entities: list[Entity]
-    _remove_queue: list[Entity]
-    _next_id: Entity
-    _systems: dict[type, list[System]]
-    _archetypes: dict[type, list[Entity]]
+    _objects: dict[EntityID, Entity]
+    _entities: list[EntityID]
+    _spawn_queue: list[tuple[EntityID, Entity]]
+    _removed_entities: list[EntityID]
+    _remove_queue: list[EntityID]
+    _next_id: EntityID
+    _systems: dict[type, list[InternalSystem]]
+    _archetypes: dict[type, list[EntityID]]
     _types: list[type]
 
-    def __init__(self, system: dict[type, list[System]], archetypes: dict[type, list[Entity]], types: list[type]) -> None:
+    def __init__(self, system: dict[type, list[InternalSystem]], archetypes: dict[type, list[EntityID]], types: list[type]) -> None:
         self._objects = dict()
 
         self._entities = list()
@@ -31,7 +30,7 @@ class World:
         self._removed_entities = list()
         self._remove_queue = list()
 
-        self._next_id = Entity(0)
+        self._next_id = EntityID(0)
 
         self._systems = system
         self._archetypes = archetypes
@@ -47,8 +46,8 @@ class World:
         for t, entities in self._archetypes.items():
             for e in entities:
                 obj = self._objects[e]
-                for f in self._systems[t]:
-                    commands = f(obj, dt)
+                for system in self._systems[t]:
+                    commands = system(obj, dt)
                     if commands is None:
                         continue
                     for obj in commands.objects_to_add:
@@ -56,7 +55,7 @@ class World:
                     for e in commands.entities_to_remove:
                         self.queue_remove(e)
 
-    def spawn(self, obj: WorldObject) -> Entity:
+    def spawn(self, obj: Entity) -> EntityID:
         """
         Queues an entity to be added to the world\n
         The entity gets added at the start of the next frame\n
@@ -64,7 +63,7 @@ class World:
         """
         if len(self._removed_entities) == 0:
             id = self._next_id
-            self._next_id = Entity(1 + id)
+            self._next_id = EntityID(1 + id)
         else:
             id = self._removed_entities.pop()
 
@@ -72,7 +71,7 @@ class World:
         self._spawn_queue.append((id, obj))
         return id
 
-    def queue_remove(self, id: Entity):
+    def queue_remove(self, id: EntityID):
         """
         Queues a entity to be removed\n
         The entity gets removed at the start of the next frame\n

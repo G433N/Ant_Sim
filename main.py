@@ -1,12 +1,12 @@
 import pygame
 from functools import partial
-from ECS.init_world import SetUpWorld
-from ECS.world_object import WorldObject
-from Objects.ant import Ant, update_ant
-from Objects.ant_nest import AntNest, update_ant_nest
+from ECS.world_generator import WorldGenerator
+from Objects.Componets.world_object import WorldObject
+from Objects.ant import Ant, ant_system
+from Objects.ant_nest import AntNest, ant_nest_system
 from pygame import Vector2
-from Objects.Componets.movment import Movment, update_movement
-from util import draw_objects
+from Objects.Componets.movment import Movment, movement_system
+from util import draw_system
 
 SCREENSIZE = (1280, 720)
 WORLDSIZE = Vector2(SCREENSIZE)
@@ -17,11 +17,11 @@ clock = pygame.time.Clock()
 dt: float = 0
 running = True
 
-setup = SetUpWorld()
-setup.add_system(AntNest, partial(update_ant_nest, WORLDSIZE))
-setup.add_system(Ant, partial(update_ant, WORLDSIZE))
-setup.add_system(Movment, update_movement)
-setup.add_system(WorldObject, partial(draw_objects, screen))
+setup = WorldGenerator()
+setup.add_system(AntNest, partial(ant_nest_system, WORLDSIZE))
+setup.add_system(Ant, partial(ant_system, WORLDSIZE))
+setup.add_system(Movment, movement_system)
+setup.add_system(WorldObject, partial(draw_system, screen))
 
 world = setup.compile()
 world.spawn(AntNest(Vector2(500, 500)))

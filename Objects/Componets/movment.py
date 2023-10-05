@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from pygame import Vector2
-from ECS.world_object import WorldObject
+from Objects.Componets.world_object import WorldObject
 
 
 @dataclass
@@ -9,7 +9,7 @@ class Movment(WorldObject):
     acceleration: Vector2
 
 
-def update_movement(obj: Movment, dt: float) -> None:
+def movement_system(obj: Movment, dt: float) -> None:
     friction(obj)
     obj.velocity += obj.acceleration * dt
     obj.position += obj.velocity * dt

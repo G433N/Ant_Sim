@@ -1,8 +1,20 @@
-from typing import Any, Callable
-from ECS.util import Entity, TempEntity
-from ECS.world_object import WorldObject
+from __future__ import annotations
+from typing import Any, NewType, Optional, Protocol
+from ECS.entity import EntityID
+from Objects.Componets.world_object import WorldObject
 
-type System = Callable[[Any, float], Command | None]
+TempEntity = NewType("TempEntity", int)
+
+
+# Make these two the same
+class System[T](Protocol):
+    def __call__(self, obj: T, dt: float) -> Optional[Command]:
+        ...
+
+
+class InternalSystem(Protocol):
+    def __call__(self, obj: Any, dt: float) -> Optional[Command]:
+        ...
 
 
 class Command:
@@ -10,7 +22,7 @@ class Command:
     Use this class to remove or spawn entities from inside a system
     """
     objects_to_add: list[WorldObject]
-    entities_to_remove: list[Entity]
+    entities_to_remove: list[EntityID]
     _next_id: TempEntity
 
     def __init__(self) -> None:
@@ -29,7 +41,7 @@ class Command:
         self.objects_to_add.append(obj)
         return id
 
-    def queue_remove(self, e: Entity):
+    def queue_remove(self, e: EntityID):
         """
         Queues a entity to be removed\n
         The entity gets removed at the start of the next frame\n

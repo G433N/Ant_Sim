@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from pygame import Vector2
-from ECS.util import NOT_INIT_ENTITY
+from ECS.entity import NOT_INIT_ENTITY
 from Objects.Componets.movment import Movment
 from util import random_vector
 
@@ -18,10 +18,9 @@ class Ant(Movment):
         self.color = "red"
         self.radius = 5
         self.target = target
-        
 
 
-def update_ant(world_size: Vector2, obj: Ant, dt: float):
+def ant_system(world_size: Vector2, obj: Ant, dt: float):
     if obj.position.distance_squared_to(obj.target) < 100:
         obj.target = random_vector(world_size)
 
