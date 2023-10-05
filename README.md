@@ -7,5 +7,6 @@ Powred by a custom ECS like datastructure <br>
 
 ## Dependencies
 
-+ [Python 1.12](https://www.python.org/downloads/)
++ [Python 1.12](www.python.org/downloads/)
 + [Pygame](www.pygame.org/news)
++ [Mermaid.js](www.mermaid.js.org/) Optional: Only for program structure visual
