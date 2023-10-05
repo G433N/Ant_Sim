@@ -5,7 +5,7 @@ from Objects.Componets.world_object import WorldObject
 from Objects.ant import Ant, ant_system
 from Objects.ant_nest import AntNest, ant_nest_system
 from pygame import Vector2
-from Objects.Componets.movment import Movment, movement_system
+from Objects.Componets.movment import Movement, movement_system
 from util import draw_system
 
 SCREENSIZE = (1280, 720)
@@ -20,7 +20,7 @@ running = True
 setup = WorldGenerator()
 setup.add_system(AntNest, partial(ant_nest_system, WORLDSIZE))
 setup.add_system(Ant, partial(ant_system, WORLDSIZE))
-setup.add_system(Movment, movement_system)
+setup.add_system(Movement, movement_system)
 setup.add_system(WorldObject, partial(draw_system, screen))
 
 world = setup.compile()

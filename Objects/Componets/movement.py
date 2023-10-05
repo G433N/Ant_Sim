@@ -4,19 +4,19 @@ from Objects.Componets.world_object import WorldObject
 
 
 @dataclass
-class Movment(WorldObject):
+class Movement(WorldObject):
     velocity: Vector2
     acceleration: Vector2
 
 
-def movement_system(obj: Movment, dt: float) -> None:
+def movement_system(obj: Movement, dt: float) -> None:
     friction(obj)
     obj.velocity += obj.acceleration * dt
     obj.position += obj.velocity * dt
     obj.acceleration *= 0
 
 
-def friction(obj: Movment) -> None:
+def friction(obj: Movement) -> None:
     if obj.velocity.length_squared() < 1:
         return
 

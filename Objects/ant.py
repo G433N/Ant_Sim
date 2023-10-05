@@ -2,12 +2,12 @@ from dataclasses import dataclass
 
 from pygame import Vector2
 from ECS.entity import NOT_INIT_ENTITY
-from Objects.Componets.movment import Movment
+from Objects.Componets.movment import Movement
 from util import random_vector
 
 
 @dataclass
-class Ant(Movment):
+class Ant(Movement):
     target: Vector2
 
     def __init__(self, positon: Vector2, target: Vector2) -> None:
