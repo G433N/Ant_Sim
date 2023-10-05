@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, NewType, Optional, Protocol
+from typing import NewType, Optional, Protocol
 from ECS.entity import EntityID
 from Objects.Componets.world_object import WorldObject
 
@@ -9,11 +9,6 @@ TempEntity = NewType("TempEntity", int)
 # Make these two the same
 class System[T](Protocol):
     def __call__(self, obj: T, dt: float) -> Optional[Command]:
-        ...
-
-
-class InternalSystem(Protocol):
-    def __call__(self, obj: Any, dt: float) -> Optional[Command]:
         ...
 
 
