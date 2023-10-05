@@ -1,6 +1,7 @@
 from dataclasses import dataclass
+from typing import Any
 from ECS.entity import Entity, EntityID
-from ECS.system import InternalSystem
+from ECS.system import System
 
 
 @dataclass
@@ -17,11 +18,11 @@ class World:
     _removed_entities: list[EntityID]
     _remove_queue: list[EntityID]
     _next_id: EntityID
-    _systems: dict[type, list[InternalSystem]]
+    _systems: dict[type, list[System[Any]]]
     _archetypes: dict[type, list[EntityID]]
     _types: list[type]
 
-    def __init__(self, system: dict[type, list[InternalSystem]], archetypes: dict[type, list[EntityID]], types: list[type]) -> None:
+    def __init__(self, system: dict[type, list[System[Any]]], archetypes: dict[type, list[EntityID]], types: list[type]) -> None:
         self._objects = dict()
 
         self._entities = list()

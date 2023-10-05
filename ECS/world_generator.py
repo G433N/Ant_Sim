@@ -1,5 +1,6 @@
+from typing import Any
 from ECS.entity import EntityID
-from ECS.system import InternalSystem, System
+from ECS.system import System
 from ECS.world import World
 from Objects.Componets.world_object import WorldObject
 
@@ -10,7 +11,7 @@ class WorldGenerator:
     by adding system to a this class. \n
     When you are done use 'compile()' to get your ECS world
     """
-    _systems: dict[type, list[InternalSystem]]
+    _systems: dict[type, list[System[Any]]]
     _types: list[type]
     _archetypes: dict[type, list[EntityID]]
 
