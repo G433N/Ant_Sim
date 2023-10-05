@@ -32,7 +32,7 @@ w.spawn(WorldObject(NOT_INIT_ENTITY, Vector2(), 5, "test"))
 for x in range(5):
     w.run(1)
 
-print([x for x in w.get_enteties()])
+print([x for x in w.get_entities()])
 
 for obj in w.get_archetypes(WorldObject):
     print(obj)
