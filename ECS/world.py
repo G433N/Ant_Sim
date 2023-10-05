@@ -112,6 +112,11 @@ class World:
             yield self._objects[id]
 
     def get_archetypes[T: Entity](self, t: type[T]):
+        """
+        Methods to iterate through all objects in an archetypes\n
+        to do stuff that are not currently possible with systems \n
+        uses isinstance(), aka is slow
+        """
         for e in self._archetypes[t]:
             obj = self._objects[e]
             assert isinstance(obj, t)
