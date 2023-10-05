@@ -6,12 +6,12 @@ ANT_NEST_COLOR: Final = "orange"
 ANT_NEST_RADIUS: Final = 25
 
 ANT_NEST_MAX_SPAWN: Final = 100
-ANT_NEST_SPAWN_RATE: Final = 2
+ANT_NEST_SPAWN_RATE: Final = 1.33
 
 type F = Callable[[Position, Position], None]
 
 
-class Ant_Nets:
+class AntNets:
     position: list[Position]
     timer: list[float]
     spawned_ants: list[int]
