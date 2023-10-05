@@ -1,15 +1,12 @@
+from typing import Final
 import pygame
-from functools import partial
-from ECS.world_generator import WorldGenerator
-from Objects.Componets.world_object import WorldObject
-from Objects.ant import Ant, ant_system
-from Objects.ant_nest import AntNest, ant_nest_system
 from pygame import Vector2
-from Objects.Componets.movement import Movement, movement_system
-from util import draw_system
+from ant_nests import Ant_Nets
 
-SCREENSIZE = (1280, 720)
-WORLDSIZE = Vector2(SCREENSIZE)
+from ants import Ants
+
+SCREENSIZE: Final = (1280, 720)
+WORLDSIZE: Final = Vector2(SCREENSIZE)
 
 pygame.init()
 screen = pygame.display.set_mode(SCREENSIZE)
@@ -17,22 +14,21 @@ clock = pygame.time.Clock()
 dt: float = 0
 running = True
 
-setup = WorldGenerator()
-setup.add_system(AntNest, partial(ant_nest_system, WORLDSIZE))
-setup.add_system(Ant, partial(ant_system, WORLDSIZE))
-setup.add_system(Movement, movement_system)
-setup.add_system(WorldObject, partial(draw_system, screen))
+ants = Ants(WORLDSIZE)
+ant_nets = Ant_Nets(WORLDSIZE, ants.add)
+ant_nets.add(WORLDSIZE / 2)
 
-world = setup.compile()
-world.spawn(AntNest(Vector2(500, 500)))
 
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
+    ant_nets.update(dt)
+    ants.update(dt)
     screen.fill("darkgreen")
-    world.run(dt)
+    ant_nets.draw(screen)
+    ants.draw(screen)
 
     pygame.display.flip()
     dt = clock.tick(60) / 1000  # limits FPS to 60
