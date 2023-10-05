@@ -25,10 +25,14 @@ w.add_system(Movement, f)
 w.add_system(WorldObject, g)
 w = w.compile()
 w.spawn(Movement(NOT_INIT_ENTITY, Vector2(),
-                5, "red", Vector2(), Vector2()))
+                 5, "red", Vector2(), Vector2()))
 w.spawn(WorldObject(NOT_INIT_ENTITY, Vector2(), 5, "lol"))
+w.spawn(WorldObject(NOT_INIT_ENTITY, Vector2(), 5, "test"))
 
 for x in range(5):
     w.run(1)
 
-print([x for x in w.get_objects()])
+print([x for x in w.get_enteties()])
+
+for obj in w.get_archetypes(WorldObject):
+    print(obj)

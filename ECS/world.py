@@ -103,10 +103,16 @@ class World:
                     self._archetypes[t].remove(e)
             del obj
 
-    def get_objects(self):
+    def get_entities(self):
         """
         Methods to iterate through all objects in the world\n
         to do stuff that are not currently possible with systems
         """
         for id in self._entities:
             yield self._objects[id]
+
+    def get_archetypes[T: Entity](self, t: type[T]):
+        for e in self._archetypes[t]:
+            obj = self._objects[e]
+            assert isinstance(obj, t)
+            yield obj
