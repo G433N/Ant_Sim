@@ -1,7 +1,9 @@
 from dataclasses import dataclass
 from math import prod
 
-from typing import Final
+from typing import Final, cast
+
+from pygame import Vector2
 from Util.globals import SCREEN_SIZE
 
 TIME: Final = 1
@@ -53,6 +55,16 @@ class PheromoneGrid:
         if self.timer >= TIME:
             self.timer = self.timer % TIME
             self.grid_list = get_diffused_list(self.grid_list,self.grid_size)
+
+    def add(self,
+            position: Vector2,
+            strenght: int = 10, 
+            cell_size: int = CELL_SIZE, 
+            grid_size: tuple[int,int] = GRID_SIZE
+            ):
+        a = position.x//cell_size + grid_size[0]*position.y//cell_size
+        cast(int,a)
+        self.grid_list[a] += strenght
 
     def __str__(self):
         s = ""
@@ -132,10 +144,10 @@ def int_and_bin_gen(n:int):
         yield x,num
         num = num << 1
 
-pg = PheromoneGrid((10, 10))
-pg.grid_list[25] = 10
-pg.grid_list[80] = 10
-print(pg)
-for _ in range(1):
-    pg.update(TIME)
-    print(pg)
+#pg = PheromoneGrid((10, 10))
+#pg.grid_list[25] = 10
+#pg.grid_list[80] = 10
+#print(pg)
+#for _ in range(1):
+    #pg.update(TIME)
+    #print(pg)
