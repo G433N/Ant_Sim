@@ -1,8 +1,8 @@
 from typing import Final
 from pygame import Surface, Vector2, draw
-from add_pheromone import add_pheromone
-from movement import Movement, apply_movement_physics
-from util import random_vector
+from Ant.Pheromone.add_pheromone import add_pheromone
+from Util.movement import Movement, apply_movement_physics
+from Util.util import random_vector
 
 ANT_ACCELERATION: Final = 3000
 ANT_COLOR: Final = "black"

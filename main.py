@@ -12,7 +12,6 @@ dt: float = 0
 running = True
 
 pheromones = Pheromones()
-pheromones.add(WORLD_SIZE / 3)
 ants = Ants(WORLD_SIZE, pheromones.add)
 ant_nets = AntNets(WORLD_SIZE, ants.add)
 ant_nets.add(WORLD_SIZE / 2)

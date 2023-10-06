@@ -1,4 +1,4 @@
-from typing import Protocol
+from typing import Callable, Protocol
 
 from pygame import Vector2
 
