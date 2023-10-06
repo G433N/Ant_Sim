@@ -1,28 +1,29 @@
 
 from typing import Final, Protocol
 
-from data_types import Acceleration, Position, Velocity
+from pygame import Vector2
+
 
 MY: Final = 0.0002
 
 
 class Movement(Protocol):
-    position: list[Position]
-    velocity: list[Velocity]
-    acceleration: list[Acceleration]
+    position: list[Vector2]
+    velocity: list[Vector2]
+    acceleration: list[Vector2]
 
     def get_movment_bundle(self):
         return (self.position, self.velocity, self.acceleration)
 
 
-def apply_movement_physics(position: Position, velocity: Velocity, acceleration: Acceleration, dt: float):
+def apply_movement_physics(position: Vector2, velocity: Vector2, acceleration: Vector2, dt: float):
     apply_friction(position, velocity)
     velocity += acceleration * dt
     position += velocity * dt
     acceleration *= 0
 
 
-def apply_friction(position: Position, velocity: Velocity):
+def apply_friction(position: Vector2, velocity: Vector2):
     if velocity.length_squared() < 1:
         return
 

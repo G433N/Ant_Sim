@@ -1,12 +1,11 @@
 from typing import Final
 from pygame import Surface, Vector2, draw
 from add_pheromone import add_pheromone
-from data_types import Acceleration, Position, Target, Velocity
 from movement import Movement, apply_movement_physics
 from util import random_vector
 
 ANT_ACCELERATION: Final = 3000
-ANT_COLOR: Final = "red"
+ANT_COLOR: Final = "black"
 ANT_RADIUS: Final = 5
 
 PHEROMONE_DELAY: Final = 1
@@ -16,11 +15,11 @@ TARGET_RADIUS: Final = 2
 
 
 class Ants(Movement):
-    position: list[Position]
-    velocity: list[Velocity]
-    acceleration: list[Acceleration]
+    position: list[Vector2]
+    velocity: list[Vector2]
+    acceleration: list[Vector2]
     timer: list[float]
-    target: list[Position]
+    target: list[Vector2]
     world_size: Vector2
     spawn_pheromone: add_pheromone
 
@@ -33,7 +32,7 @@ class Ants(Movement):
         self.target = list()
         self.spawn_pheromone = spawn_pheromone
 
-    def add(self, position: Position, spawn_area: Position):
+    def add(self, position: Vector2, spawn_area: Vector2):
         self.position.append(position)
         self.velocity.append(Vector2())
         self.acceleration.append(Vector2())
@@ -53,12 +52,16 @@ class Ants(Movement):
                 self.spawn_pheromone(position.copy())
 
     def draw(self, screen: Surface):
-        for position, target in zip(self.position, self.target):
+        for position, target, velocity in zip(self.position, self.target, self.velocity):
             draw.circle(screen, ANT_COLOR, position, ANT_RADIUS)
             draw.circle(screen, TARGET_COLOR, target, TARGET_RADIUS)
+            if velocity.length_squared() < 1:
+                continue
+            draw.circle(screen, ANT_COLOR, position +
+                        velocity.normalize() * ANT_RADIUS * 1.2, ANT_RADIUS * 0.8)
 
 
-def _update_ant(position: Position, velocity: Velocity, acceleration: Acceleration, target: Target, dt: float, world_size: Vector2):
+def _update_ant(position: Vector2, velocity: Vector2, acceleration: Vector2, target: Vector2, dt: float, world_size: Vector2):
     apply_movement_physics(position, velocity, acceleration, dt)
     if position.distance_squared_to(target) < 10**2:
         target.xy = random_vector(world_size)

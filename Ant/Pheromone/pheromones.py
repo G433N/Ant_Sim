@@ -1,7 +1,6 @@
 from typing import Final
 
-import pygame
-from data_types import Position
+from pygame import Vector2, draw, Surface
 
 
 DECAY_RATE: Final = 0.15
@@ -13,14 +12,14 @@ PHEROMONE_COLOR = "purple"
 
 class Pheromones:
 
-    position: list[Position]
+    position: list[Vector2]
     strength: list[float]
 
     def __init__(self) -> None:
         self.position = list()
         self.strength = list()
 
-    def add(self, position: Position):
+    def add(self, position: Vector2):
         self.position.append(position)
         self.strength.append(MAXIMUM_STRENGTH)
 
@@ -41,6 +40,6 @@ class Pheromones:
             self.position.pop(i)
             self.strength.pop(i)
 
-    def draw(self, screen: pygame.Surface):
+    def draw(self, screen: Surface):
         for position, radius in zip(self.position, self.strength):
-            pygame.draw.circle(screen, PHEROMONE_COLOR, position, radius)
+            draw.circle(screen, PHEROMONE_COLOR, position, radius)

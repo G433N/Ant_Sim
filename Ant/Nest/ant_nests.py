@@ -1,18 +1,17 @@
 from typing import Callable, Final
 from pygame import Surface, Vector2, draw
-from data_types import Position
 
-ANT_NEST_COLOR: Final = "orange"
+ANT_NEST_COLOR: Final = "brown"
 ANT_NEST_RADIUS: Final = 25
 
-ANT_NEST_MAX_SPAWN: Final = 100
+ANT_NEST_MAX_SPAWN: Final = 25
 ANT_NEST_SPAWN_RATE: Final = 1.33
 
-type F = Callable[[Position, Position], None]
+type F = Callable[[Vector2, Vector2], None]
 
 
 class AntNets:
-    position: list[Position]
+    position: list[Vector2]
     timer: list[float]
     spawned_ants: list[int]
     world_size: Vector2
@@ -25,7 +24,7 @@ class AntNets:
         self.timer = list()
         self.spawned_ants = list()
 
-    def add(self, position: Position):
+    def add(self, position: Vector2):
         self.position.append(position)
         self.timer.append(0)
         self.spawned_ants.append(0)
