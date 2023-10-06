@@ -1,7 +1,7 @@
 import pygame
 from Ant.Nest.ant_nests import AntNets
 from Ant.ants import Ants
-from globals import SCREEN_SIZE, WORLD_SIZE
+from Util.globals import SCREEN_SIZE, WORLD_SIZE
 from Ant.Pheromone.pheromones import Pheromones
 
 
