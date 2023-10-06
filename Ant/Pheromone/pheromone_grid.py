@@ -1,17 +1,19 @@
 from dataclasses import dataclass
 from math import prod
 
-from typing import Final, cast
+from typing import Final
 
-from pygame import Vector2
+from pygame import Color, Surface, Vector2
+import pygame
 from Util.globals import SCREEN_SIZE
 
 TIME: Final = 1
-DIFFUSION_EDGE: Final = 10
-DIFFUSION_CORNER: Final = 5
-DIFFUSION_MIDDLE: Final = 250
-DECAY_STRENGTH: Final = 0.1
+DIFFUSION_EDGE: Final = 1
+DIFFUSION_CORNER: Final = 2
+DIFFUSION_MIDDLE: Final = 10
+DECAY_STRENGTH: Final = 0.2
 CELL_SIZE: Final = 20
+MAX_PER_TILE: Final = 255
 
 
 BIT_MAPS: Final = (
@@ -42,36 +44,50 @@ DIFFUSION_STRENGTH_MAP: Final = bleed_mapper(1, DIFFUSION_STRENGTH_SUM(1,2), DIF
 class PheromoneGrid:
     timer: float
     grid_list: list[float]
-    grid_size: tuple[int, int]
+    len: int
 
-    def __init__(self, grid_size: tuple[int, int] = GRID_SIZE):
+    def __init__(self):
         self.timer = 0
-        self.grid_list = [0] * prod(grid_size)
-        self.grid_size = grid_size
+        self.len = prod(GRID_SIZE)
+        self.grid_list = [0] * self.len
+
 
     def update(self, dt: float):
         self.timer += dt
 
         if self.timer >= TIME:
             self.timer = self.timer % TIME
-            self.grid_list = get_diffused_list(self.grid_list,self.grid_size)
+            self.grid_list = get_diffused_list(self.grid_list)
+
 
     def add(self,
             position: Vector2,
-            strenght: int = 10, 
-            cell_size: int = CELL_SIZE, 
-            grid_size: tuple[int,int] = GRID_SIZE
+            strenght: int = 255, 
+            grid_size: tuple[int,int] = GRID_SIZE,
+            cell_size: int = CELL_SIZE
             ):
-        a = position.x//cell_size + grid_size[0]*position.y//cell_size
-        cast(int,a)
-        self.grid_list[a] += strenght
+        x = int(position.x/cell_size)
+        y = int(grid_size[0]*int(position.y/cell_size))
+        index = x + y
+        if 0 > index or self.len <= index:
+            return
+        self.grid_list[index] += strenght
 
     def __str__(self):
         s = ""
         for i, x in enumerate(self.grid_list):
-            b = (self.grid_size[0]-i-1) % self.grid_size[0] == 0
+            b = (GRID_SIZE[0]-i-1) % GRID_SIZE[0] == 0
             s += f"{round(x, 3): <7}" + 2 * "\n" * b
         return s + f"\n{self.sum()}"
+
+    def draw(self,screen: Surface,grid_size:tuple[int,int]=GRID_SIZE):
+        for y in range(grid_size[1]):
+            for x in range(grid_size[0]):
+                rect = pygame.Rect(x*CELL_SIZE, y*CELL_SIZE, CELL_SIZE, CELL_SIZE)
+                i = x+y*(grid_size[0])
+                alpha = max(0, min(255, int(self.grid_list[i])))
+                c = Color(240,30,alpha)
+                pygame.draw.rect(screen, c, rect)
 
     def sum(self):
         return sum(self.grid_list)
@@ -79,17 +95,20 @@ class PheromoneGrid:
 def get_diffused_list(grid_list:list[float], grid_size: tuple[int,int] = GRID_SIZE):
         new_grid_list: list[float] = []
         for i in range(prod(grid_size)):
-            case: int = get_map_case(i, grid_size)
-            s=0
-            for x,y in int_and_bin_gen(9):
-                if (BIT_MAPS[case]&y):
-                    s+= (DIFFUSION_BLEED_MAP[x]/
-                        DIFFUSION_STRENGTH_MAP[case]*
-                        grid_list[i+x % 3-1+(x//3-1)*grid_size[0]]
-                    ) 
-            new_grid_list.append(s)
+            new_grid_list.append(diffusion_calc(grid_list, i, grid_size))
         return new_grid_list
     
+def diffusion_calc(grid_list:list[float], index:int, grid_size:tuple[int,int] = GRID_SIZE) -> float:
+    case: int = get_map_case(index, grid_size)
+    s=0
+    for x,y in int_and_bin_gen(9):
+        if (BIT_MAPS[case]&y):
+            s+= (DIFFUSION_BLEED_MAP[x]/
+                DIFFUSION_STRENGTH_MAP[case]*
+                grid_list[index+x % 3-1+(x//3-1)*grid_size[0]]
+            ) 
+    return min(s, MAX_PER_TILE)
+
 def get_map_case(index: int, grid_size: tuple[int,int] = GRID_SIZE) -> int:
         top: bool = index < grid_size[0]
         bottom: bool = index > grid_size[0]*(grid_size[1]-2)
@@ -151,3 +170,4 @@ def int_and_bin_gen(n:int):
 #for _ in range(1):
     #pg.update(TIME)
     #print(pg)
+

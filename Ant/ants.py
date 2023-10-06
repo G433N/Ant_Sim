@@ -4,7 +4,7 @@ from Ant.Pheromone.add_pheromone import add_pheromone
 from Util.movement import Movement, apply_movement_physics
 from Util.util import random_vector
 
-ANT_ACCELERATION: Final = 3000
+ANT_ACCELERATION: Final = 250
 ANT_COLOR: Final = "black"
 ANT_RADIUS: Final = 5
 
@@ -41,15 +41,17 @@ class Ants(Movement):
 
     def update(self, dt: float):
 
-        for i, (position, velocity, acceleration, target) in enumerate(zip(*self.get_movment_bundle(), self.target)):
+        for i, (position, velocity, acceleration, target) in enumerate(zip(self.position, self.velocity, self.acceleration, self.target)):
             _update_ant(position, velocity, acceleration,
                         target, dt, self.world_size)
 
             self.timer[i] += dt
             time = self.timer[i]
+            
             if time >= PHEROMONE_DELAY:
                 self.timer[i] = time % PHEROMONE_DELAY
-                self.spawn_pheromone(position.copy())
+                p = position.copy()
+                self.spawn_pheromone(p)
 
     def draw(self, screen: Surface):
         for position, target, velocity in zip(self.position, self.target, self.velocity):
@@ -67,4 +69,4 @@ def _update_ant(position: Vector2, velocity: Vector2, acceleration: Vector2, tar
         target.xy = random_vector(world_size)
 
     dir = (target - position).normalize()
-    acceleration += dir * ANT_ACCELERATION * dt
+    acceleration += dir * ANT_ACCELERATION
