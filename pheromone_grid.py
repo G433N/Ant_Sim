@@ -8,8 +8,16 @@ TIME: Final = 1
 DIFFUSION_EDGE: Final = 10
 DIFFUSION_CORNER: Final = 5
 DIFFUSION_MIDDLE: Final = 250
-DECAY_STRENGTH: Final = 0.03
+DECAY_STRENGTH: Final = 0.035
 CELL_SIZE: Final = 20
+
+
+BIT_MAPS: Final = (
+                0b110110000, 0b111111000, 0b011011000,
+                0b110110110, 0b111111111, 0b011011011,
+                0b000110110, 0b000111111, 0b000011011)
+
+
 
 
 def DIFFUSION_STRENGTH_SUM(corner: int, edge: int):
@@ -17,11 +25,16 @@ def DIFFUSION_STRENGTH_SUM(corner: int, edge: int):
 
 
 GRID_SIZE: Final = (SCREEN_SIZE[0]//CELL_SIZE, SCREEN_SIZE[1]//CELL_SIZE)
-DIFFUSIONBLEED: Final = (
-    (1-DECAY_STRENGTH)*DIFFUSION_CORNER/DIFFUSION_STRENGTH_SUM(4, 4),
-    (1-DECAY_STRENGTH)*DIFFUSION_EDGE/DIFFUSION_STRENGTH_SUM(4, 4),
-    (1-DECAY_STRENGTH)*DIFFUSION_MIDDLE/DIFFUSION_STRENGTH_SUM(4, 4))
 
+def bleed_mapper(k: float,corner:int,edge:int,middle:int):
+    return (k*corner,   k*edge,     k*corner,
+            k*edge,     k*middle,   k*edge,
+            k*corner,   k*edge,     k*corner)
+
+
+DIFFUSION_BLEED_MAP: Final = bleed_mapper((1-DECAY_STRENGTH), DIFFUSION_CORNER, DIFFUSION_EDGE, DIFFUSION_MIDDLE)
+
+DIFFUSION_STRENGTH_MAP: Final = bleed_mapper(1, DIFFUSION_STRENGTH_SUM(1,2), DIFFUSION_STRENGTH_SUM(2,3), DIFFUSION_STRENGTH_SUM(4,4))
 
 @dataclass
 class PheromoneGrid:
@@ -50,65 +63,88 @@ class PheromoneGrid:
 
     def get_diffused_list(self):
         new_grid_list: list[float] = []
-        grid = self.grid_list
         for i in range(prod(self.grid_size)):
-            corner, edge = self.get_grid_neighbours(i)
-            new_grid_list.append(
-                sum(
-                    (
-                        sum(
-                            diffusion_cal(grid[j], 0) for j in corner
-                        ),
-                        sum(
-                            diffusion_cal(grid[j], 1) for j in edge
-                        ),
-                        diffusion_cal(grid[i], 2)
-                    )
-                )
-            )
+            case: int = self.get_map_case(i)
+            s=0
+            for x,y in int_and_bin_gen(9):
+                if (BIT_MAPS[case]&y) != 0:
+                    s+= (DIFFUSION_BLEED_MAP[x]/
+                        DIFFUSION_STRENGTH_MAP[case]*
+                        self.grid_list[i+x % 3-1+(x//3-1)*self.grid_size[0]]
+                    ) 
+                 
+            new_grid_list.append(s)
+            
 
         return new_grid_list
 
-    def get_grid_neighbours(self, index: int):
+    def get_map_case(self, index: int) -> int:
+        top: bool = index < self.grid_size[0]
+        bottom: bool = index > self.grid_size[0]*(self.grid_size[1]-2)
+        left: bool = index % self.grid_size[0] == 0
+        right: bool = (index+1) % self.grid_size[0] == 0
 
-        not_top: bool = index >= self.grid_size[0]
-        not_bottom: bool = index <= self.grid_size[0]*(self.grid_size[1]-2)
-        not_left: bool = index % self.grid_size[0] != 0
-        not_right: bool = (index+1) % self.grid_size[0] != 0
+        match (left,top,right,bottom):
+            case True, True, False, False:
+                """Top_Left"""
+                return 0
 
-        neighbour_to_add: tuple[bool, ...] = (
-            not_left and not_top,       not_top,    not_right and not_top,
+            case False, True, False, False:
+                """"Top_Middle"""
+                return 1
 
-            not_left,                   False,      not_right,
+            case False, True, True, False:
+                """"Top_Right"""
+                return 2
 
-            not_left and not_bottom,    not_bottom, not_right and not_bottom
-        )
+            case True, False, False, False:
+                """"Middle_Left"""
+                return 3
 
-        neighbour_corners: list[int] = []
-        neighbour_edges: list[int] = []
+            case False, False, False, False:
+                """"Middle_Middle"""
+                return 4
 
-        for x in range(9):
-            if neighbour_to_add[x]:
-                if x % 2 == 0:
-                    neighbour_corners.append(
-                        index+x % 3-1+(x//3-1)*self.grid_size[0])
-                else:
-                    neighbour_edges.append(
-                        index+x % 3-1+(x//3-1)*self.grid_size[0])
-        return neighbour_corners, neighbour_edges
+            case False, False, True, False:
+                """"Middle_Right"""
+                return 5
+
+            case True, False, False, True:
+                """"Bottom_Left"""
+                return 6
+
+            case False, False, False, True:
+                """"Bottom_Middle"""
+                return 7
+
+            case False, False, True, True:
+                """"Bottom_Right"""
+                return 8
+
+            case _:
+                raise ValueError
+    
+    
 
     def sum(self):
         return sum(self.grid_list)
 
 
 def diffusion_cal(grid: float, diff_index: int):
-    return grid*DIFFUSIONBLEED[diff_index]
+    return grid*DIFFUSION_BLEED_MAP[diff_index]
+
+def int_and_bin_gen(n:int):
+    num = 1
+    for x in range(n):
+        yield x,num
+        num = num << 1
 
 
 pg = PheromoneGrid((10, 10))
 pg.grid_list[25] = 10
 pg.grid_list[80] = 10
 print(pg)
-for _ in range(1):
+for _ in range(20):
     pg.update(TIME)
     print(pg)
+
