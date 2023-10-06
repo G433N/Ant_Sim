@@ -16,7 +16,7 @@ ants = Ants(WORLD_SIZE, pheromones.add)
 ant_nets = AntNets(WORLD_SIZE, ants.add)
 ant_nets.add(pygame.Vector2(WORLD_SIZE/2))
 
-pheromones.add(pygame.Vector2(15*80, 8*80))
+pheromones.add(pygame.Vector2(100, 90))
 
 while running:
     for event in pygame.event.get():

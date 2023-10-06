@@ -8,18 +8,17 @@ import pygame
 from Util.globals import SCREEN_SIZE
 
 TIME: Final = 1
-DIFFUSION_EDGE: Final = 1
-DIFFUSION_CORNER: Final = 2
+DIFFUSION_CORNER: Final = 1
+DIFFUSION_EDGE: Final = 2
 DIFFUSION_MIDDLE: Final = 10
-DECAY_STRENGTH: Final = 0.2
 CELL_SIZE: Final = 20
 MAX_PER_TILE: Final = 255
 
 
 BIT_MAPS: Final = (
-                0b110110000, 0b111111000, 0b011011000,
-                0b110110110, 0b111111111, 0b011011011,
-                0b000110110, 0b000111111, 0b000011011)
+                0b110100000, 0b111101000, 0b011001000,
+                0b110100110, 0b111101111, 0b011001011,
+                0b000100110, 0b000101111, 0b000001011)
 
 
 
@@ -30,20 +29,14 @@ def DIFFUSION_STRENGTH_SUM(corner: int, edge: int):
 
 GRID_SIZE: Final = (SCREEN_SIZE[0]//CELL_SIZE, SCREEN_SIZE[1]//CELL_SIZE)
 
-def bleed_mapper(k: float,corner:int,edge:int,middle:int):
-    return (k*corner,   k*edge,     k*corner,
-            k*edge,     k*middle,   k*edge,
-            k*corner,   k*edge,     k*corner)
+DIFFUSION_BLEED_MAP: Final = (DIFFUSION_CORNER, DIFFUSION_EDGE, DIFFUSION_MIDDLE)
 
-
-DIFFUSION_BLEED_MAP: Final = bleed_mapper((1-DECAY_STRENGTH), DIFFUSION_CORNER, DIFFUSION_EDGE, DIFFUSION_MIDDLE)
-
-DIFFUSION_STRENGTH_MAP: Final = bleed_mapper(1, DIFFUSION_STRENGTH_SUM(1,2), DIFFUSION_STRENGTH_SUM(2,3), DIFFUSION_STRENGTH_SUM(4,4))
+DIFFUSION_STRENGTH_MAP: Final = (DIFFUSION_STRENGTH_SUM(1,2), DIFFUSION_STRENGTH_SUM(2,3), DIFFUSION_STRENGTH_SUM(4,4))
 
 @dataclass
 class PheromoneGrid:
     timer: float
-    grid_list: list[float]
+    grid_list: list[int]
     len: int
 
     def __init__(self):
@@ -62,7 +55,7 @@ class PheromoneGrid:
 
     def add(self,
             position: Vector2,
-            strenght: int = 255, 
+            strenght: int = 100, 
             grid_size: tuple[int,int] = GRID_SIZE,
             cell_size: int = CELL_SIZE
             ):
@@ -85,29 +78,57 @@ class PheromoneGrid:
             for x in range(grid_size[0]):
                 rect = pygame.Rect(x*CELL_SIZE, y*CELL_SIZE, CELL_SIZE, CELL_SIZE)
                 i = x+y*(grid_size[0])
-                alpha = max(0, min(255, int(self.grid_list[i])))
+                alpha = max(0, min(255, self.grid_list[i]))
                 c = Color(240,30,alpha)
                 pygame.draw.rect(screen, c, rect)
 
     def sum(self):
         return sum(self.grid_list)
 
-def get_diffused_list(grid_list:list[float], grid_size: tuple[int,int] = GRID_SIZE):
-        new_grid_list: list[float] = []
+def get_diffused_list(grid_list:list[int], grid_size: tuple[int,int] = GRID_SIZE) -> list[int]:
+        new_grid_list: list[int] = []
+        pre_calc_bleed_map: tuple[tuple[int,...],...]
+
+        
+        temp_list_2: list[tuple[int,int,int]] = []
+
         for i in range(prod(grid_size)):
-            new_grid_list.append(diffusion_calc(grid_list, i, grid_size))
+            temp_list_2.append((DIFFUSION_CORNER*grid_list[i], DIFFUSION_EDGE*grid_list[i], DIFFUSION_MIDDLE*grid_list[i]))
+
+        pre_calc_bleed_map = tuple(temp_list_2)
+
+
+        temp_list_2 = []
+
+
+        for i in range(prod(grid_size)):
+            new_grid_list.append(diffusion_calc(grid_list, i, pre_calc_bleed_map))
         return new_grid_list
     
-def diffusion_calc(grid_list:list[float], index:int, grid_size:tuple[int,int] = GRID_SIZE) -> float:
-    case: int = get_map_case(index, grid_size)
-    s=0
+def diffusion_calc(grid_list:list[int], index:int,bleed_map: tuple[tuple[int,...],...], grid_size:tuple[int,int] = GRID_SIZE) -> int:
+    s=grid_list[index]
+    case: int = get_map_case(index)
     for x,y in int_and_bin_gen(9):
+        
         if (BIT_MAPS[case]&y):
-            s+= (DIFFUSION_BLEED_MAP[x]/
-                DIFFUSION_STRENGTH_MAP[case]*
-                grid_list[index+x % 3-1+(x//3-1)*grid_size[0]]
-            ) 
-    return min(s, MAX_PER_TILE)
+            z = index+x % 3-1+(x//3-1)*grid_size[0]
+            s += (
+                     bleed_map[z][grid_to_tuple(x)]
+                     //DIFFUSION_STRENGTH_MAP[grid_to_tuple(get_map_case(z))]
+                     -
+                     bleed_map[index][grid_to_tuple(x)]
+                     //DIFFUSION_STRENGTH_MAP[grid_to_tuple(case)]
+                     )
+
+    return min(s - (s>>2), MAX_PER_TILE)
+
+def grid_to_tuple(index:int) ->int:
+
+    if index%2:
+        return 1
+    if index == 4:
+        return 2
+    return 0
 
 def get_map_case(index: int, grid_size: tuple[int,int] = GRID_SIZE) -> int:
         top: bool = index < grid_size[0]
@@ -155,13 +176,11 @@ def get_map_case(index: int, grid_size: tuple[int,int] = GRID_SIZE) -> int:
             case _:
                 raise ValueError
 
-
-
 def int_and_bin_gen(n:int):
     num = 1
     for x in range(n):
         yield x,num
-        num = num << 1
+        num <<= 1
 
 #pg = PheromoneGrid((10, 10))
 #pg.grid_list[25] = 10
