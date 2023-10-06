@@ -1,20 +1,21 @@
 from typing import Final
 from pygame import Surface, Vector2, draw
 from Ant.Pheromone.add_pheromone import add_pheromone
-from Util.movement import Movement, apply_movement_physics
+from Ant.ant import Ant
+from Util.movement import apply_movement_physics
 from Util.util import random_vector
 
-ANT_ACCELERATION: Final = 3000
+ANT_ACCELERATION: Final = 300
 ANT_COLOR: Final = "black"
 ANT_RADIUS: Final = 5
 
-PHEROMONE_DELAY: Final = 1
+PHEROMONE_DELAY: Final = .5
 
 TARGET_COLOR: Final = "blue"
 TARGET_RADIUS: Final = 2
 
 
-class Ants(Movement):
+class SimpleAnts(Ant):
     position: list[Vector2]
     velocity: list[Vector2]
     acceleration: list[Vector2]
@@ -41,9 +42,9 @@ class Ants(Movement):
 
     def update(self, dt: float):
 
-        for i, (position, velocity, acceleration, target) in enumerate(zip(*self.get_movment_bundle(), self.target)):
-            _update_ant(position, velocity, acceleration,
-                        target, dt, self.world_size)
+        for i, (position, velocity, acceleration, target) in enumerate(zip(*self.movment_bundle(), self.target)):
+            basic_ant_movement(position, velocity, acceleration,
+                               target, dt, self.world_size)
 
             self.timer[i] += dt
             time = self.timer[i]
@@ -61,10 +62,10 @@ class Ants(Movement):
                         velocity.normalize() * ANT_RADIUS * 1.2, ANT_RADIUS * 0.8)
 
 
-def _update_ant(position: Vector2, velocity: Vector2, acceleration: Vector2, target: Vector2, dt: float, world_size: Vector2):
+def basic_ant_movement(position: Vector2, velocity: Vector2, acceleration: Vector2, target: Vector2, dt: float, world_size: Vector2):
     apply_movement_physics(position, velocity, acceleration, dt)
     if position.distance_squared_to(target) < 10**2:
         target.xy = random_vector(world_size)
 
     dir = (target - position).normalize()
-    acceleration += dir * ANT_ACCELERATION * dt
+    acceleration += dir * ANT_ACCELERATION
