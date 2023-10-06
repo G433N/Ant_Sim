@@ -2,13 +2,13 @@ from dataclasses import dataclass
 from math import prod
 
 from typing import Final
-from main import SCREEN_SIZE
+from Util.globals import SCREEN_SIZE
 
 TIME: Final = 1
 DIFFUSION_EDGE: Final = 10
 DIFFUSION_CORNER: Final = 5
 DIFFUSION_MIDDLE: Final = 250
-DECAY_STRENGTH: Final = 0.035
+DECAY_STRENGTH: Final = 0.1
 CELL_SIZE: Final = 20
 
 
@@ -52,7 +52,7 @@ class PheromoneGrid:
 
         if self.timer >= TIME:
             self.timer = self.timer % TIME
-            self.grid_list = self.get_diffused_list()
+            self.grid_list = get_diffused_list(self.grid_list,self.grid_size)
 
     def __str__(self):
         s = ""
@@ -61,28 +61,28 @@ class PheromoneGrid:
             s += f"{round(x, 3): <7}" + 2 * "\n" * b
         return s + f"\n{self.sum()}"
 
-    def get_diffused_list(self):
+    def sum(self):
+        return sum(self.grid_list)
+
+def get_diffused_list(grid_list:list[float], grid_size: tuple[int,int] = GRID_SIZE):
         new_grid_list: list[float] = []
-        for i in range(prod(self.grid_size)):
-            case: int = self.get_map_case(i)
+        for i in range(prod(grid_size)):
+            case: int = get_map_case(i, grid_size)
             s=0
             for x,y in int_and_bin_gen(9):
-                if (BIT_MAPS[case]&y) != 0:
+                if (BIT_MAPS[case]&y):
                     s+= (DIFFUSION_BLEED_MAP[x]/
                         DIFFUSION_STRENGTH_MAP[case]*
-                        self.grid_list[i+x % 3-1+(x//3-1)*self.grid_size[0]]
+                        grid_list[i+x % 3-1+(x//3-1)*grid_size[0]]
                     ) 
-                 
             new_grid_list.append(s)
-            
-
         return new_grid_list
-
-    def get_map_case(self, index: int) -> int:
-        top: bool = index < self.grid_size[0]
-        bottom: bool = index > self.grid_size[0]*(self.grid_size[1]-2)
-        left: bool = index % self.grid_size[0] == 0
-        right: bool = (index+1) % self.grid_size[0] == 0
+    
+def get_map_case(index: int, grid_size: tuple[int,int] = GRID_SIZE) -> int:
+        top: bool = index < grid_size[0]
+        bottom: bool = index > grid_size[0]*(grid_size[1]-2)
+        left: bool = index % grid_size[0] == 0
+        right: bool = (index+1) % grid_size[0] == 0
 
         match (left,top,right,bottom):
             case True, True, False, False:
@@ -123,15 +123,8 @@ class PheromoneGrid:
 
             case _:
                 raise ValueError
-    
-    
-
-    def sum(self):
-        return sum(self.grid_list)
 
 
-def diffusion_cal(grid: float, diff_index: int):
-    return grid*DIFFUSION_BLEED_MAP[diff_index]
 
 def int_and_bin_gen(n:int):
     num = 1
@@ -139,12 +132,10 @@ def int_and_bin_gen(n:int):
         yield x,num
         num = num << 1
 
-
 pg = PheromoneGrid((10, 10))
 pg.grid_list[25] = 10
 pg.grid_list[80] = 10
 print(pg)
-for _ in range(20):
+for _ in range(1):
     pg.update(TIME)
     print(pg)
-
