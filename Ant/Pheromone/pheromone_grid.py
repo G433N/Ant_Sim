@@ -69,7 +69,7 @@ class PheromoneGrid:
                                    CELL_SIZE, CELL_SIZE)
                 i = x+y*(grid_size[0])
                 alpha = max(0, min(255, self.grid_list[i]))
-                c = Color(alpha, 120, alpha)
+                c = Color((4*alpha)//5, max(120-alpha,0), 50+(4*alpha)//5)
                 pygame.draw.rect(screen, c, rect)
 
     def sum(self):
@@ -117,6 +117,6 @@ def generate_diffused_list(grid_list: list[int], grid_diffusion_amount: tuple[in
         if not (left):
             s += grid_diffusion_amount[i - 1]
 
-        new_grid_list.append(min(s-(s >> 4), MAX_PER_TILE))
+        new_grid_list.append(min(s-(s>>4)-min(s&15,((s&15)>>2)+1), MAX_PER_TILE))
 
     return new_grid_list
