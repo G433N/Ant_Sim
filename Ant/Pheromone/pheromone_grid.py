@@ -8,9 +8,9 @@ import pygame
 from Util.globals import SCREEN_SIZE
 
 TIME: Final = 1
-DIFFUSION_CORNER: Final = 1
-DIFFUSION_EDGE: Final = 2
-DIFFUSION_MIDDLE: Final = 10
+DIFFUSION_CORNER: Final = 5
+DIFFUSION_EDGE: Final = 30
+DIFFUSION_MIDDLE: Final = 100
 CELL_SIZE: Final = 20
 MAX_PER_TILE: Final = 255
 
@@ -50,6 +50,7 @@ class PheromoneGrid:
 
         if self.timer >= TIME:
             self.timer = self.timer % TIME
+            #print(self.sum())
             self.grid_list = get_diffused_list(self.grid_list)
 
 
@@ -87,48 +88,28 @@ class PheromoneGrid:
 
 def get_diffused_list(grid_list:list[int], grid_size: tuple[int,int] = GRID_SIZE) -> list[int]:
         new_grid_list: list[int] = []
-        pre_calc_bleed_map: tuple[tuple[int,...],...]
-
-        
-        temp_list_2: list[tuple[int,int,int]] = []
 
         for i in range(prod(grid_size)):
-            temp_list_2.append((DIFFUSION_CORNER*grid_list[i], DIFFUSION_EDGE*grid_list[i], DIFFUSION_MIDDLE*grid_list[i]))
-
-        pre_calc_bleed_map = tuple(temp_list_2)
-
-
-        temp_list_2 = []
-
-
-        for i in range(prod(grid_size)):
-            new_grid_list.append(diffusion_calc(grid_list, i, pre_calc_bleed_map))
+            new_grid_list.append(diffusion_calc(grid_list, i))
         return new_grid_list
     
-def diffusion_calc(grid_list:list[int], index:int,bleed_map: tuple[tuple[int,...],...], grid_size:tuple[int,int] = GRID_SIZE) -> int:
+def diffusion_calc(grid_list:list[int], index:int, grid_size:tuple[int,int] = GRID_SIZE) -> int:
     s=grid_list[index]
     case: int = get_map_case(index)
-    for x,y in int_and_bin_gen(9):
+    for x,y in case_selection():
         
         if (BIT_MAPS[case]&y):
             z = index+x % 3-1+(x//3-1)*grid_size[0]
             s += (
-                     bleed_map[z][grid_to_tuple(x)]
-                     //DIFFUSION_STRENGTH_MAP[grid_to_tuple(get_map_case(z))]
+                     [DIFFUSION_CORNER,DIFFUSION_EDGE][x%2]* grid_list[z]
+                     //DIFFUSION_STRENGTH_MAP[get_map_case(z)%2]
                      -
-                     bleed_map[index][grid_to_tuple(x)]
-                     //DIFFUSION_STRENGTH_MAP[grid_to_tuple(case)]
+                     [DIFFUSION_CORNER,DIFFUSION_EDGE][x%2]* grid_list[index]
+                     //DIFFUSION_STRENGTH_MAP[case%2]
                      )
 
-    return min(s - (s>>2), MAX_PER_TILE)
+    return min(s - 0*(s>>4), MAX_PER_TILE)
 
-def grid_to_tuple(index:int) ->int:
-
-    if index%2:
-        return 1
-    if index == 4:
-        return 2
-    return 0
 
 def get_map_case(index: int, grid_size: tuple[int,int] = GRID_SIZE) -> int:
         top: bool = index < grid_size[0]
@@ -176,9 +157,9 @@ def get_map_case(index: int, grid_size: tuple[int,int] = GRID_SIZE) -> int:
             case _:
                 raise ValueError
 
-def int_and_bin_gen(n:int):
+def case_selection():
     num = 1
-    for x in range(n):
+    for x in range(9):
         yield x,num
         num <<= 1
 
