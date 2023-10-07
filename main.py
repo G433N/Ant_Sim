@@ -5,7 +5,7 @@ from Ant.Pheromone.pheromones import Pheromones
 from Ant.simple_ants import SimpleAnts
 from Util.chunks import ChunkedData
 from Util.globals import SCREEN_SIZE, WORLD_SIZE
-from pygame import mouse
+from pygame import mouse, Vector2
 
 
 pygame.init()
@@ -22,6 +22,9 @@ nests.add(WORLD_SIZE / 2)
 
 food = Food()
 food.add(WORLD_SIZE/4, 20, 100)
+food.add(Vector2(100, 500), 20, 100)
+food.add(WORLD_SIZE/4 + Vector2(700, 0), 20, 100)
+food.add(3 * WORLD_SIZE/4, 20, 100)
 ants.food = food
 
 show_chunk = False

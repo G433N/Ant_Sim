@@ -7,7 +7,7 @@ from Ant.Pheromone.add_pheromone import add_pheromone
 from Ant.ant import Ant
 from Util.movement import apply_movement_physics
 
-ANT_ACCELERATION: Final = 300
+ANT_ACCELERATION: Final = 150
 ANT_COLOR: Final = "black"
 ANT_RADIUS: Final = 5
 
@@ -55,15 +55,22 @@ class SimpleAnts(Ant):
         for i, (position, velocity, acceleration, direction) in enumerate(zip(*self.movment_bundle(), self.direction)):
             apply_movement_physics(position, velocity, acceleration, dt)
 
+            dirs: tuple[float, Vector2] = []
             for food in self.food.position:
                 diff = food - position
                 dist = diff.length_squared()
                 if dist > 100**2 or dist < 1:
                     continue
-                dir = diff / sqrt(dist)
+                dist = sqrt(dist)
+                dir = diff / dist
                 dot = velocity.normalize().dot(dir)
                 if dot > .5:
-                    direction.xy = dir
+                    dirs.append((dist, dir.copy()))
+                    break
+
+            if len(dirs) > 0:
+                dirs.sort(key= lambda x : x[0])
+                direction.xy = dirs[0][1]
 
             acceleration += direction * ANT_ACCELERATION
 

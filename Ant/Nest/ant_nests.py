@@ -2,10 +2,10 @@ from typing import Callable, Final
 from pygame import Surface, Vector2, draw
 
 ANT_NEST_COLOR: Final = "brown"
-ANT_NEST_RADIUS: Final = 25
+ANT_NEST_RADIUS: Final = 10
 
-ANT_NEST_MAX_SPAWN: Final = 25
-ANT_NEST_SPAWN_RATE: Final = 1.33
+ANT_NEST_MAX_SPAWN: Final = 1000
+ANT_NEST_SPAWN_RATE: Final = .5
 
 type F = Callable[[Vector2], None]
 
