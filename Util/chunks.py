@@ -2,19 +2,22 @@
 
 from pygame import Surface, Vector2, draw
 
+from Util.globals import WORLD_SIZE
+
 
 CHUNK_SIZE = 100
 
 
-class Chunks:
+class ChunkedData[T]:
 
-    world_size: Vector2
+    _data: dict[int, T]
 
-    def __init__(self, world_size: Vector2) -> None:
-        self.world_size = world_size
+    def __init__(self) -> None:
+        pass
 
-    def draw(self, surface: Surface):
-        max_x, max_y = self.world_size.xy
+    @classmethod
+    def draw(cls, surface: Surface):
+        max_x, max_y = WORLD_SIZE.xy
         x, y = 0, 0
 
         while x < max_x:

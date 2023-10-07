@@ -1,8 +1,9 @@
 import pygame
+from Ant.Food.food import Food
 from Ant.Nest.ant_nests import AntNets
 from Ant.Pheromone.pheromones import Pheromones
 from Ant.simple_ants import SimpleAnts
-from Util.chunks import Chunks
+from Util.chunks import ChunkedData
 from Util.globals import SCREEN_SIZE, WORLD_SIZE
 from pygame import mouse
 
@@ -15,11 +16,14 @@ running = True
 
 mouse_position = pygame.Vector2()
 pheromones = Pheromones()
-ants = SimpleAnts(WORLD_SIZE, pheromones.add)
+ants = SimpleAnts(pheromones.add)
 nests = AntNets(WORLD_SIZE, ants.add)
 nests.add(WORLD_SIZE / 2)
 
-test_chunk = Chunks(WORLD_SIZE)
+food = Food()
+food.add(WORLD_SIZE/4, 20, 100)
+ants.food = food
+
 show_chunk = False
 
 while running:
@@ -40,9 +44,10 @@ while running:
 
     pheromones.draw(screen)
     nests.draw(screen)
+    food.draw(screen)
     ants.draw(screen)
     if show_chunk:
-        test_chunk.draw(screen)
+        ChunkedData.draw(screen)
 
     pygame.display.flip()
     dt = clock.tick(60) / 1000  # limits FPS to 60

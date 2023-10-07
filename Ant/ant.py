@@ -10,7 +10,6 @@ class Ant(Movement, Protocol):
     position: list[Vector2]
     velocity: list[Vector2]
     acceleration: list[Vector2]
-    world_size: Vector2
 
     def update(self, dt: float):
         ...

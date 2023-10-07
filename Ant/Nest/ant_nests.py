@@ -7,7 +7,7 @@ ANT_NEST_RADIUS: Final = 25
 ANT_NEST_MAX_SPAWN: Final = 25
 ANT_NEST_SPAWN_RATE: Final = 1.33
 
-type F = Callable[[Vector2, Vector2], None]
+type F = Callable[[Vector2], None]
 
 
 class AntNets:
@@ -35,7 +35,7 @@ class AntNets:
             time = self.timer[i]
             spawned = self.spawned_ants[i]
             if spawned < ANT_NEST_MAX_SPAWN and time > ANT_NEST_SPAWN_RATE:
-                self.spawn(position.copy(), self.world_size)
+                self.spawn(position.copy())
                 self.spawned_ants[i] += 1
                 self.timer[i] = time % ANT_NEST_SPAWN_RATE
 
