@@ -8,8 +8,8 @@ import pygame
 from Util.globals import SCREEN_SIZE
 
 TIME: Final = 1
-DIFFUSION_EDGE: Final = 10
-DIFFUSION_MIDDLE: Final = 100
+DIFFUSION_EDGE: Final = 1
+DIFFUSION_MIDDLE: Final = 4
 CELL_SIZE: Final = 20
 MAX_PER_TILE: Final = 255
 
@@ -117,6 +117,9 @@ def generate_diffused_list(grid_list: list[int], grid_diffusion_amount: tuple[in
         if not (left):
             s += grid_diffusion_amount[i - 1]
 
-        new_grid_list.append(min(s-(s>>4)-min(s&15,((s&15)>>2)+1), MAX_PER_TILE))
+        new_grid_list.append(min(decay(s), MAX_PER_TILE))
 
     return new_grid_list
+
+def decay(x: int) -> int:
+    return x-(x>>4)-min(x&15,((x&15)>>2)+1)
