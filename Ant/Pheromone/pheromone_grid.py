@@ -100,15 +100,27 @@ def diffusion_calc(grid_list:list[int], index:int, grid_size:tuple[int,int] = GR
         
         if (BIT_MAPS[case]&y):
             z = index+x % 3-1+(x//3-1)*grid_size[0]
+            neighbour_case = get_map_case(z)
             s += (
                      [DIFFUSION_CORNER,DIFFUSION_EDGE][x%2]* grid_list[z]
-                     //DIFFUSION_STRENGTH_MAP[get_map_case(z)%2]
+                     //DIFFUSION_STRENGTH_MAP[neighbour_case%2+2*(neighbour_case == 4)]
                      -
                      [DIFFUSION_CORNER,DIFFUSION_EDGE][x%2]* grid_list[index]
-                     //DIFFUSION_STRENGTH_MAP[case%2]
+                     //DIFFUSION_STRENGTH_MAP[case%2+2*(case == 4)]
                      )
 
     return min(s - 0*(s>>4), MAX_PER_TILE)
+
+
+def new_diffusion_calc(grid_list:list[int], index:int,relative_index: int, grid_size:tuple[int,int] = GRID_SIZE) -> int:
+    case: int = get_map_case(index)
+    z = index+relative_index % 3-1+(relative_index//3-1)*grid_size[0]
+    neighbour_case = get_map_case(z)
+    return ([DIFFUSION_CORNER,DIFFUSION_EDGE][relative_index%2]* grid_list[z]
+                     //DIFFUSION_STRENGTH_MAP[neighbour_case%2+2*(neighbour_case == 4)]
+                     -
+                     [DIFFUSION_CORNER,DIFFUSION_EDGE][relative_index%2]* grid_list[index]
+                     //DIFFUSION_STRENGTH_MAP[case%2+2*(case == 4)])
 
 
 def get_map_case(index: int, grid_size: tuple[int,int] = GRID_SIZE) -> int:
