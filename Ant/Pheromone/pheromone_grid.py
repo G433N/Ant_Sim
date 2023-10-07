@@ -69,7 +69,7 @@ class PheromoneGrid:
                                    CELL_SIZE, CELL_SIZE)
                 i = x+y*(grid_size[0])
                 alpha = max(0, min(255, self.grid_list[i]))
-                c = Color(240, 30, alpha)
+                c = Color(alpha, 120, alpha)
                 pygame.draw.rect(screen, c, rect)
 
     def sum(self):
