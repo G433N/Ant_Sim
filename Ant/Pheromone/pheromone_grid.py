@@ -29,19 +29,27 @@ class PheromoneGrid:
     timer: float
     grid_list: list[int]
     len: int
+    color_grid: tuple[Color,...]
 
     def __init__(self):
         self.timer = 0
         self.len = prod(GRID_SIZE)
         self.grid_list = [0] * self.len
+        self.color_grid = ()
+        for _ in range(self.len):   
+            self.color_grid += (Color(0, 120, 50),)
 
     def update(self, dt: float):
         self.timer += dt
 
         if self.timer >= TIME:
             self.timer = self.timer % TIME
-            self.grid_list = generate_diffused_list(self.grid_list, generate_diffusion_amount(self.grid_list))
-
+            grid_tuple = tuple(self.grid_list)
+            self.grid_list = generate_diffused_list(grid_tuple, generate_diffusion_amount(grid_tuple))
+            self.color_grid = ()
+            for i in range(self.len):
+                a =self.grid_list[i]
+                self.color_grid += (Color((4*a)//5, max(120-a,0), 50+(4*a)//5),)
     def add(self,
             position: Vector2,
             strenght: int = 100,
@@ -62,21 +70,21 @@ class PheromoneGrid:
             s += f"{round(x, 3): <7}" + 2 * "\n" * b
         return s + f"\n{self.sum()}"
 
-    def draw(self, screen: Surface, grid_size: tuple[int, int] = GRID_SIZE):
+
+    def draw(self, screen: Surface, grid_size: tuple[int, int] = GRID_SIZE):  
+              
         for y in range(grid_size[1]):
             for x in range(grid_size[0]):
+                i = x+y*(grid_size[0])
                 rect = pygame.Rect(x*CELL_SIZE, y*CELL_SIZE,
                                    CELL_SIZE, CELL_SIZE)
-                i = x+y*(grid_size[0])
-                alpha = max(0, min(255, self.grid_list[i]))
-                c = Color((4*alpha)//5, max(120-alpha,0), 50+(4*alpha)//5)
-                pygame.draw.rect(screen, c, rect)
+                pygame.draw.rect(screen, self.color_grid[i], rect)
 
     def sum(self):
         return sum(self.grid_list)
 
 
-def generate_diffusion_amount(grid_list: list[int], grid_size: tuple[int, int] = GRID_SIZE):
+def generate_diffusion_amount(grid_list: tuple[int,...], grid_size: tuple[int, int] = GRID_SIZE):
 
     grid_diffusion_amount: tuple[int, ...] = ()
 
@@ -93,7 +101,7 @@ def generate_diffusion_amount(grid_list: list[int], grid_size: tuple[int, int] =
     return grid_diffusion_amount
 
 
-def generate_diffused_list(grid_list: list[int], grid_diffusion_amount: tuple[int, ...],  grid_size: tuple[int, int] = GRID_SIZE):
+def generate_diffused_list(grid_list: tuple[int,...], grid_diffusion_amount: tuple[int, ...],  grid_size: tuple[int, int] = GRID_SIZE):
     new_grid_list: list[int] = []
     for i in range(prod(grid_size)):
 
