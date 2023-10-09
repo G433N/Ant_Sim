@@ -3,7 +3,7 @@ from Ant.Food.food import Food
 from Ant.Nest.ant_nests import AntNets
 from Ant.Pheromone.pheromones import Pheromones
 from Ant.simple_ants import SimpleAnts
-from Util.chunks import ChunkedData
+from Util.chunked_data import ChunkedData
 from Util.globals import SCREEN_SIZE, WORLD_SIZE
 from pygame import mouse, Vector2
 

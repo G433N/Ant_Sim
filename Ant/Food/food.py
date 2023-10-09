@@ -2,7 +2,11 @@
 
 from math import cos, pi, sin, sqrt
 from random import random
+from typing import Final
 from pygame import Surface, Vector2, draw
+
+from Util.chunked_data import ChunkedData
+from Util.globals import WORLD_SIZE
 
 """
 Note to future me
@@ -13,14 +17,14 @@ is very very low
 never mind u can max eat one food per ant per frame 
 and an ant check every possibale food before the next ant does the same
 """
+FOOD_SIZE: Final = 4
 
 
 class Food:
-    position: list[Vector2]
+    position: ChunkedData[Vector2]
 
     def __init__(self) -> None:
-        self.position = list()
-        self._eaten = list()
+        self.position = ChunkedData(WORLD_SIZE)
 
     def add(self, position: Vector2, amount: int, radius: float):
         for _ in range(amount):
@@ -30,8 +34,8 @@ class Food:
                 radius * sqrt(r2) * cos(2 * pi * r1),
                 radius * sqrt(r2) * sin(2 * pi * r1)
             )
-            self.position.append(v)
+            self.position.add(v, v)
 
     def draw(self, surface: Surface):
-        for position in self.position:
-            draw.circle(surface, "yellow", position, 4)
+        for position in self.position.get_data():
+            draw.circle(surface, "yellow", position, FOOD_SIZE)
