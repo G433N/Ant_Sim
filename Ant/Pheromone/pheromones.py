@@ -3,9 +3,9 @@ from typing import Final
 from pygame import Vector2, draw, Surface
 
 
-DECAY_RATE: Final = 0.15
-MINIMUM_STRENGTH: Final = 5
-MAXIMUM_STRENGTH: Final = 20
+DECAY_RATE: Final = 1
+MINIMUM_STRENGTH: Final = 4
+MAXIMUM_STRENGTH: Final = 8
 
 PHEROMONE_COLOR = "purple"
 
@@ -25,11 +25,11 @@ class Pheromones:
 
     def update(self, dt: float):
         strength = self.strength
-        decay = 1 - DECAY_RATE * dt
+        decay = DECAY_RATE * dt
         to_remove: list[int] = list()
 
         for i in range(len(strength)):
-            strength[i] *= decay
+            strength[i] -= decay
 
             if strength[i] < MINIMUM_STRENGTH:
                 to_remove.append(i)

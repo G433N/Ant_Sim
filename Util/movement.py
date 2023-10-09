@@ -12,7 +12,7 @@ class Movement(Protocol):
     velocity: list[Vector2]
     acceleration: list[Vector2]
 
-    def get_movment_bundle(self):
+    def movment_bundle(self):
         return (self.position, self.velocity, self.acceleration)
 
 
