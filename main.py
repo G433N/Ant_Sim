@@ -37,13 +37,11 @@ while running:
             if event.key == pygame.K_g:
                 show_chunk = not show_chunk
 
-    mouse_position.x, mouse_position.y = mouse.get_pos()
-
     pheromones.update(dt)
     ants.update(dt)
     nests.update(dt)
 
-    screen.fill("darkgreen")
+    screen.fill(pygame.Color(0, 120, 50))
 
     pheromones.draw(screen)
     nests.draw(screen)
@@ -53,7 +51,9 @@ while running:
         ChunkedData.draw(screen)
 
     pygame.display.flip()
-    dt = clock.tick(30) / 1000  # limits FPS to 60
-    print(len(pheromones.position), clock.get_fps())
+    dt = clock.tick(120) / 1000  # limits FPS to 60
+    if n % 60 == 0:
+        print(len(ants.position), clock.get_fps())
+    n += 1
 
 pygame.quit()
