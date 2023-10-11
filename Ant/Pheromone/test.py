@@ -1,5 +1,6 @@
-x= 255
-y= 40
 
-print((x//y)*y+x%y)
 
+
+
+for x in range(10):
+    print(bin(1<<(x<<1)))

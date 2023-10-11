@@ -1,58 +1,80 @@
 from dataclasses import dataclass
 from math import prod
 
-from typing import Final
+from typing import  Final
 
 from pygame import Color, Surface, Vector2
 import pygame
 from Util.globals import SCREEN_SIZE
 
-TIME: Final = 1
-DIFFUSION_EDGE: Final = 1
-DIFFUSION_MIDDLE: Final = 4
-CELL_SIZE: Final = 20
-MAX_PER_TILE: Final = 255
+DIFFUSION_TIME: Final = 0.05
+DECAY_TIME: Final = 1
 
+DIFFUSION_EDGE: Final = 1
+DIFFUSION_MIDDLE: Final = 50
+MAX_PER_TILE: Final = 2047
 
 def DIFFUSION_STRENGTH_SUM(edge: int):
     return edge * DIFFUSION_EDGE + DIFFUSION_MIDDLE
 
-
-GRID_SIZE: Final = (SCREEN_SIZE[0]//CELL_SIZE, SCREEN_SIZE[1]//CELL_SIZE)
-
 DIFFUSION_STRENGTH_MAP: Final = (DIFFUSION_STRENGTH_SUM(
     2), DIFFUSION_STRENGTH_SUM(3), DIFFUSION_STRENGTH_SUM(4))
 
+CELL_SIZE: Final = 5
+
+
+GRID_SIZE: Final = (SCREEN_SIZE[0]//CELL_SIZE, SCREEN_SIZE[1]//CELL_SIZE)
+
+
+
 
 @dataclass
-class PheromoneGrid:
-    timer: float
+class Pheromone_Grid:
+    diffusion_timer: float
+    decay_timer: float
     grid_list: list[int]
     len: int
-    color_grid: tuple[Color,...]
+    color_grid: tuple[Color, ...]
 
     def __init__(self):
-        self.timer = 0
+        self.diffusion_timer = 0
+        self.decay_timer = 0
         self.len = prod(GRID_SIZE)
         self.grid_list = [0] * self.len
         self.color_grid = ()
-        for _ in range(self.len):   
+        for _ in range(self.len):
             self.color_grid += (Color(0, 120, 50),)
 
     def update(self, dt: float):
-        self.timer += dt
+        self.diffusion_timer += dt
+        self.decay_timer += dt
 
-        if self.timer >= TIME:
-            self.timer = self.timer % TIME
-            grid_tuple = tuple(self.grid_list)
-            self.grid_list = generate_diffused_list(grid_tuple, generate_diffusion_amount(grid_tuple))
+        if self.decay_timer >= DECAY_TIME:
+            self.decay_timer = self.decay_timer % DECAY_TIME
+
             self.color_grid = ()
             for i in range(self.len):
-                a =self.grid_list[i]
-                self.color_grid += (Color((4*a)//5, max(120-a,0), 50+(4*a)//5),)
+                a = min(decay(self.grid_list[i]), MAX_PER_TILE)
+                self.grid_list[i] = a
+                a = min(a//8,255)
+                self.color_grid += (Color((4*a)//5,
+                                    max(120-a, 0), 50+(4*a)//5),)
+
+        if self.diffusion_timer >= DIFFUSION_TIME:
+
+            self.diffusion_timer = self.diffusion_timer % DIFFUSION_TIME
+            grid_tuple = tuple(self.grid_list)
+            self.grid_list = generate_diffused_list(
+                grid_tuple, generate_diffusion_amount(grid_tuple))
+            self.color_grid = ()
+            for i in range(self.len):
+                a = min(self.grid_list[i]//8,255)
+                self.color_grid += (Color((4*a)//5,
+                                    max(120-a, 0), 50+(4*a)//5),)
+
     def add(self,
             position: Vector2,
-            strenght: int = 100,
+            strenght: int = 300,
             grid_size: tuple[int, int] = GRID_SIZE,
             cell_size: int = CELL_SIZE
             ):
@@ -70,38 +92,38 @@ class PheromoneGrid:
             s += f"{round(x, 3): <7}" + 2 * "\n" * b
         return s + f"\n{self.sum()}"
 
+    def draw(self, screen: Surface, grid_size: tuple[int, int] = GRID_SIZE):
 
-    def draw(self, screen: Surface, grid_size: tuple[int, int] = GRID_SIZE):  
-              
         for y in range(grid_size[1]):
             for x in range(grid_size[0]):
                 i = x+y*(grid_size[0])
-                rect = pygame.Rect(x*CELL_SIZE, y*CELL_SIZE,
-                                   CELL_SIZE, CELL_SIZE)
-                pygame.draw.rect(screen, self.color_grid[i], rect)
+                if (self.color_grid[i] != Color(0, 120, 50)):
+                    rect = pygame.Rect(x*CELL_SIZE, y*CELL_SIZE,
+                                       CELL_SIZE, CELL_SIZE)
+                    pygame.draw.rect(screen, self.color_grid[i], rect)
 
     def sum(self):
         return sum(self.grid_list)
 
 
-def generate_diffusion_amount(grid_list: tuple[int,...], grid_size: tuple[int, int] = GRID_SIZE):
+def generate_diffusion_amount(grid_list: tuple[int, ...], grid_size: tuple[int, int] = GRID_SIZE):
 
     grid_diffusion_amount: tuple[int, ...] = ()
 
     for i in range(prod(grid_size)):
         not_top_or_bottom: bool = not (
             i < grid_size[0] or i > grid_size[0]*(grid_size[1]-2))
-        
+
         not_left_or_right: bool = not (
             i % grid_size[0] == 0 or (i+1) % grid_size[0] == 0)
-        
+
         grid_diffusion_amount += ((DIFFUSION_EDGE * grid_list[i])
                                   // DIFFUSION_STRENGTH_MAP[not_top_or_bottom + not_left_or_right],)
-        
+
     return grid_diffusion_amount
 
 
-def generate_diffused_list(grid_list: tuple[int,...], grid_diffusion_amount: tuple[int, ...],  grid_size: tuple[int, int] = GRID_SIZE):
+def generate_diffused_list(grid_list: tuple[int, ...], grid_diffusion_amount: tuple[int, ...],  grid_size: tuple[int, int] = GRID_SIZE):
     new_grid_list: list[int] = []
     for i in range(prod(grid_size)):
 
@@ -125,9 +147,13 @@ def generate_diffused_list(grid_list: tuple[int,...], grid_diffusion_amount: tup
         if not (left):
             s += grid_diffusion_amount[i - 1]
 
-        new_grid_list.append(min(decay(s), MAX_PER_TILE))
+        new_grid_list.append(min(s, MAX_PER_TILE))
 
     return new_grid_list
 
+
 def decay(x: int) -> int:
-    return x-(x>>4)-min(x&15,((x&15)>>2)+1)
+    y = 6
+    return (x-(x >> y)-min( x&((1<<y)-1) , 3 ) )
+
+
