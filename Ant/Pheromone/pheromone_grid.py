@@ -28,6 +28,35 @@ CELL_SIZE: Final = 20
 GRID_SIZE: Final = (SCREEN_SIZE[0]//CELL_SIZE, SCREEN_SIZE[1]//CELL_SIZE)
 
 
+def top(i: int):
+    return i > GRID_SIZE[0]*(GRID_SIZE[1]-2)
+
+
+def bottom(i: int):
+    return i < GRID_SIZE[0]
+
+
+def left(i: int):
+    return i % GRID_SIZE[0] == 0
+
+
+def right(i: int):
+    return (i+1) % GRID_SIZE[0] == 0
+
+
+BORDER_GRID = tuple(
+    (not top(i)) << 3 |
+    (not bottom(i)) << 2 |
+    (not left(i)) << 1 |
+    (not right(i)) for i in range(prod(GRID_SIZE))
+)
+
+NOT_TOP = 1 << 3
+NOT_BOTTOM = 1 << 2
+NOT_LEFT = 1 << 0
+NOT_RIGHT = 0
+
+
 @dataclass
 class Pheromone_Grid:
     diffusion_timer: float
@@ -106,45 +135,46 @@ class Pheromone_Grid:
 
 
 def not_top_or_bottom(i: int):
-    return not (i < GRID_SIZE[0] or i > GRID_SIZE[0]*(GRID_SIZE[1]-2))
+    return not bottom(i) or top(i)
 
 
 def not_left_or_right(i: int):
-    return not (i % GRID_SIZE[0] == 0 or (i+1) % GRID_SIZE[0] == 0)
+    return not left(i) or right(i)
 
 
 def generate_diffusion_amount(grid_list: tuple[int, ...]):
 
     gen = (
-        (DIFFUSION_EDGE * grid_list[i]) //
-        DIFFUSION_STRENGTH_MAP[not_top_or_bottom(i) + not_left_or_right(i)]
-        for i in range(prod(GRID_SIZE)))
+        (DIFFUSION_EDGE * value) //
+        DIFFUSION_STRENGTH_MAP[
+            (NOT_TOP | NOT_BOTTOM) & border != 0
+            +
+            (NOT_LEFT | NOT_RIGHT) & border != 0]
+        for value, border in zip(grid_list, BORDER_GRID))
 
     return tuple(gen)
 
 
-def generate_diffused_list(grid_list: tuple[int, ...], grid_diffusion_amount: tuple[int, ...],  grid_size: tuple[int, int] = GRID_SIZE):
+def generate_diffused_list(grid_list: tuple[int, ...], grid_diffusion_amount: tuple[int, ...]):
     new_grid_list: list[int] = []
-    for i in range(prod(grid_size)):
 
-        top: bool = i < grid_size[0]
-        bottom: bool = i > grid_size[0]*(grid_size[1]-2)
-        left: bool = i % grid_size[0] == 0
-        right: bool = (i+1) % grid_size[0] == 0
+    for i in range(prod(GRID_SIZE)):
 
-        s: int = grid_list[i] - (4 - (top+bottom+left+right)
+        t, b, l, r = top(i), bottom(i), left(i), right(i)
+
+        s: int = grid_list[i] - (4 - (t+b+l+r)
                                  ) * grid_diffusion_amount[i]
 
-        if not (top):
-            s += grid_diffusion_amount[i - grid_size[0]]
+        if not (t):
+            s += grid_diffusion_amount[i + GRID_SIZE[0]]
 
-        if not (right):
+        if not (r):
             s += grid_diffusion_amount[i + 1]
 
-        if not (bottom):
-            s += grid_diffusion_amount[i + grid_size[0]]
+        if not (b):
+            s += grid_diffusion_amount[i - GRID_SIZE[0]]
 
-        if not (left):
+        if not (l):
             s += grid_diffusion_amount[i - 1]
 
         new_grid_list.append(min(s, MAX_PER_TILE))
