@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from math import prod
 
-from typing import  Final
+from typing import Final
 
 from pygame import Color, Surface, Vector2
 import pygame
@@ -14,18 +14,18 @@ DIFFUSION_EDGE: Final = 1
 DIFFUSION_MIDDLE: Final = 50
 MAX_PER_TILE: Final = 2047
 
+
 def DIFFUSION_STRENGTH_SUM(edge: int):
     return edge * DIFFUSION_EDGE + DIFFUSION_MIDDLE
+
 
 DIFFUSION_STRENGTH_MAP: Final = (DIFFUSION_STRENGTH_SUM(
     2), DIFFUSION_STRENGTH_SUM(3), DIFFUSION_STRENGTH_SUM(4))
 
-CELL_SIZE: Final = 5
+CELL_SIZE: Final = 20
 
 
 GRID_SIZE: Final = (SCREEN_SIZE[0]//CELL_SIZE, SCREEN_SIZE[1]//CELL_SIZE)
-
-
 
 
 @dataclass
@@ -52,14 +52,13 @@ class Pheromone_Grid:
         if self.decay_timer >= DECAY_TIME:
             self.decay_timer = self.decay_timer % DECAY_TIME
 
-            self.color_grid = ()
-            for i in range(self.len):
-                a = min(decay(self.grid_list[i]), MAX_PER_TILE)
-                self.grid_list[i] = a
-                a = min(a//8,255)
-                self.color_grid += (Color((4*a)//5,
-                                    max(120-a, 0), 50+(4*a)//5),)
-
+            new = [min(decay(self.grid_list[i]), MAX_PER_TILE)
+                   for i in range(self.len)]
+            self.grid_list = new
+            gen = (min(element//8, 255) for element in new)
+            self.color_grid = tuple(
+                Color((4*a)//5, max(120-a, 0), 50+(4*a)//5) for a in gen
+            )
         if self.diffusion_timer >= DIFFUSION_TIME:
 
             self.diffusion_timer = self.diffusion_timer % DIFFUSION_TIME
@@ -68,7 +67,7 @@ class Pheromone_Grid:
                 grid_tuple, generate_diffusion_amount(grid_tuple))
             self.color_grid = ()
             for i in range(self.len):
-                a = min(self.grid_list[i]//8,255)
+                a = min(self.grid_list[i]//8, 255)
                 self.color_grid += (Color((4*a)//5,
                                     max(120-a, 0), 50+(4*a)//5),)
 
@@ -154,6 +153,4 @@ def generate_diffused_list(grid_list: tuple[int, ...], grid_diffusion_amount: tu
 
 def decay(x: int) -> int:
     y = 6
-    return (x-(x >> y)-min( x&((1<<y)-1) , 3 ) )
-
-
+    return (x-(x >> y)-min(x & ((1 << y)-1), 3))

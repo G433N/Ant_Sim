@@ -22,14 +22,13 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-
     pheromones.update(dt)
     ant_nets.update(dt)
     ants.update(dt)
 
     screen.fill(pygame.Color(0, 120, 50))
 
-    # pheromones.draw(screen)
+    pheromones.draw(screen)
     ant_nets.draw(screen)
     ants.draw(screen)
 
@@ -38,5 +37,5 @@ while running:
     if n % 60 == 0:
         print(len(ants.position), clock.get_fps())
     n += 1
-    
+
 pygame.quit()
