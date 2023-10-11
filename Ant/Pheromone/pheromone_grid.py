@@ -105,21 +105,22 @@ class Pheromone_Grid:
         return sum(self.grid_list)
 
 
-def generate_diffusion_amount(grid_list: tuple[int, ...], grid_size: tuple[int, int] = GRID_SIZE):
+def not_top_or_bottom(i: int):
+    return not (i < GRID_SIZE[0] or i > GRID_SIZE[0]*(GRID_SIZE[1]-2))
 
-    grid_diffusion_amount: tuple[int, ...] = ()
 
-    for i in range(prod(grid_size)):
-        not_top_or_bottom: bool = not (
-            i < grid_size[0] or i > grid_size[0]*(grid_size[1]-2))
+def not_left_or_right(i: int):
+    return not (i % GRID_SIZE[0] == 0 or (i+1) % GRID_SIZE[0] == 0)
 
-        not_left_or_right: bool = not (
-            i % grid_size[0] == 0 or (i+1) % grid_size[0] == 0)
 
-        grid_diffusion_amount += ((DIFFUSION_EDGE * grid_list[i])
-                                  // DIFFUSION_STRENGTH_MAP[not_top_or_bottom + not_left_or_right],)
+def generate_diffusion_amount(grid_list: tuple[int, ...]):
 
-    return grid_diffusion_amount
+    gen = (
+        (DIFFUSION_EDGE * grid_list[i]) //
+        DIFFUSION_STRENGTH_MAP[not_top_or_bottom(i) + not_left_or_right(i)]
+        for i in range(prod(GRID_SIZE)))
+
+    return tuple(gen)
 
 
 def generate_diffused_list(grid_list: tuple[int, ...], grid_diffusion_amount: tuple[int, ...],  grid_size: tuple[int, int] = GRID_SIZE):
