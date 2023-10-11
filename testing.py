@@ -1,14 +1,16 @@
 
-
-from random import randint
-from pygame import Vector2
-from Util.chunked_data import ChunkedData
+import timeit
 
 
-data = ChunkedData[int](Vector2(600, 600))
-for _ in range(20):
-    data.add(randint(0, 100), Vector2(randint(0, 599), randint(0, 599)))
+class Test:
+    pass
 
-print(data)
-print(tuple(data.enumerate_neighbourhood(0)))
-print(tuple(data.get_neighbourhood(Vector2(0, 0))))
+
+def f(x: int):
+    return ~x ^ 0
+
+
+x = 100
+y = 11
+
+print(f(x), f(y))

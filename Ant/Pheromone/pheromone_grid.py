@@ -22,7 +22,7 @@ def DIFFUSION_STRENGTH_SUM(edge: int):
 DIFFUSION_STRENGTH_MAP: Final = (DIFFUSION_STRENGTH_SUM(
     2), DIFFUSION_STRENGTH_SUM(3), DIFFUSION_STRENGTH_SUM(4))
 
-CELL_SIZE: Final = 20
+CELL_SIZE: Final = 10
 
 
 GRID_SIZE: Final = (SCREEN_SIZE[0]//CELL_SIZE, SCREEN_SIZE[1]//CELL_SIZE)
@@ -57,22 +57,20 @@ NOT_LEFT = 1 << 0
 NOT_RIGHT = 0
 
 
-@dataclass
+@dataclass(slots=True)
 class Pheromone_Grid:
     diffusion_timer: float
     decay_timer: float
     grid_list: list[int]
     len: int
-    color_grid: tuple[Color, ...]
+    color_grid: list[Color]
 
     def __init__(self):
         self.diffusion_timer = 0
         self.decay_timer = 0
         self.len = prod(GRID_SIZE)
         self.grid_list = [0] * self.len
-        self.color_grid = ()
-        for _ in range(self.len):
-            self.color_grid += (Color(0, 120, 50),)
+        self.color_grid = [Color(0, 120, 50) for _ in range(self.len)]
 
     def update(self, dt: float):
         self.diffusion_timer += dt
@@ -84,24 +82,19 @@ class Pheromone_Grid:
             new = [min(decay(self.grid_list[i]), MAX_PER_TILE)
                    for i in range(self.len)]
             self.grid_list = new
-            gen = (min(element//8, 255) for element in new)
-            self.color_grid = tuple(
-                Color((4*a)//5, max(120-a, 0), 50+(4*a)//5) for a in gen
-            )
+
+            self.color_grid = get_color_grid(self.grid_list)
 
         if self.diffusion_timer >= DIFFUSION_TIME:
-
             self.diffusion_timer = self.diffusion_timer % DIFFUSION_TIME
             self.grid_list = generate_diffused_list(
                 self.grid_list, generate_diffusion_amount(self.grid_list))
 
-            gen = (min(e//8, 255) for e in self.grid_list)
-            self.color_grid = tuple(
-                Color((4*a)//5, max(120-a, 0), 50+(4*a)//5) for a in gen)
+            self.color_grid = get_color_grid(self.grid_list)
 
     def add(self,
             position: Vector2,
-            strenght: int = 300,
+            strength: int = 300,
             grid_size: tuple[int, int] = GRID_SIZE,
             cell_size: int = CELL_SIZE
             ):
@@ -110,7 +103,7 @@ class Pheromone_Grid:
         index = x + y
         if 0 > index or self.len <= index:
             return
-        self.grid_list[index] += strenght
+        self.grid_list[index] += strength
 
     def __str__(self):
         s = ""
@@ -123,6 +116,7 @@ class Pheromone_Grid:
 
         for y in range(grid_size[1]):
             for x in range(grid_size[0]):
+
                 i = x+y*(grid_size[0])
                 if (self.color_grid[i] != Color(0, 120, 50)):
                     rect = pygame.Rect(x*CELL_SIZE, y*CELL_SIZE,
@@ -180,6 +174,18 @@ def generate_diffused_list(grid_list: list[int], grid_diffusion_amount: tuple[in
         new_grid_list.append(min(s, MAX_PER_TILE))
 
     return new_grid_list
+
+
+def get_color_grid(grid_list: list[int]):
+    l: list[Color] = list()
+    for e in grid_list:
+        a = min(e//8, 255)
+        b = (4*a)//5
+        l.append(
+            Color(b, max(120-a, 0), 50+b)
+        )
+
+    return l
 
 
 def decay(x: int) -> int:

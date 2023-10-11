@@ -1,5 +1,6 @@
 from enum import Enum, auto
 from math import sqrt
+from random import random
 from typing import Final
 from pygame import Surface, Vector2, draw
 from Ant.Food.food import Food
@@ -65,8 +66,8 @@ class SimpleAnts(Ant):
         self.velocity.append(Vector2())
         self.acceleration.append(Vector2())
         self.direction.append(random_normal_vector())
-        self.pheromone_timer.append(0)
-        self.wandering_timer.append(0)
+        self.pheromone_timer.append(random() * PHEROMONE_DELAY)
+        self.wandering_timer.append(random() * WANDER_DELAY)
         self.state.append(AntState.Wandering)
 
     def update(self, dt: float):
