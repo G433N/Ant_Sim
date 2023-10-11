@@ -59,17 +59,17 @@ class Pheromone_Grid:
             self.color_grid = tuple(
                 Color((4*a)//5, max(120-a, 0), 50+(4*a)//5) for a in gen
             )
+
         if self.diffusion_timer >= DIFFUSION_TIME:
 
             self.diffusion_timer = self.diffusion_timer % DIFFUSION_TIME
             grid_tuple = tuple(self.grid_list)
             self.grid_list = generate_diffused_list(
                 grid_tuple, generate_diffusion_amount(grid_tuple))
-            self.color_grid = ()
-            for i in range(self.len):
-                a = min(self.grid_list[i]//8, 255)
-                self.color_grid += (Color((4*a)//5,
-                                    max(120-a, 0), 50+(4*a)//5),)
+
+            gen = (min(e//8, 255) for e in self.grid_list)
+            self.color_grid = tuple(
+                Color((4*a)//5, max(120-a, 0), 50+(4*a)//5) for a in gen)
 
     def add(self,
             position: Vector2,
