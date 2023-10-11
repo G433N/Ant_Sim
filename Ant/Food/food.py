@@ -1,12 +1,11 @@
 
 
-from math import cos, pi, sin, sqrt
-from random import random
 from typing import Final
 from pygame import Surface, Vector2, draw
 
 from Util.chunked_data import ChunkedData
 from Util.globals import WORLD_SIZE
+from Util.util import random_vector_disc
 
 """
 Note to future me
@@ -28,12 +27,7 @@ class Food:
 
     def add(self, position: Vector2, amount: int, radius: float):
         for _ in range(amount):
-            # https://rh8liuqy.github.io/Uniform_Disk.html
-            r1, r2 = random(), random()  # Very not uniform but what ever
-            v = position + Vector2(
-                radius * sqrt(r2) * cos(2 * pi * r1),
-                radius * sqrt(r2) * sin(2 * pi * r1)
-            )
+            v = position + random_vector_disc(radius)
             self.position.add(v, v)
 
     def draw(self, surface: Surface):

@@ -11,7 +11,7 @@ TODO: make values updatable and move chuck
 TODO: Maybe make a list for index -> chunk so no need for search
 """
 
-CHUNK_SIZE = 100
+CHUNK_SIZE = 20
 
 
 def get_neighbourhood(x: int):

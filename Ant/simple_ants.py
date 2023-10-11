@@ -1,24 +1,27 @@
-from math import pi, sqrt
-from random import random
+from enum import Enum, auto
+from math import sqrt
 from typing import Final
 from pygame import Surface, Vector2, draw
-from Ant.Food.food import FOOD_SIZE, Food
+from Ant.Food.food import Food
 from Ant.Pheromone.add_pheromone import add_pheromone
 from Ant.ant import Ant
 from Util.chunked_data import ChunkedData
+from Util.globals import WORLD_SIZE
 from Util.movement import apply_movement_physics
-from Util.util import bounds
+from Util.util import bounds, random_normal_vector
 
-ANT_ACCELERATION: Final = 150
+ANT_ACCELERATION: Final = 20
 ANT_COLOR: Final = "black"
-ANT_RADIUS: Final = 5
+ANT_RADIUS: Final = 3
 
 PHEROMONE_DELAY: Final = .5
+
+WANDER_DELAY: Final = 3
 
 TARGET_COLOR: Final = "blue"
 TARGET_RADIUS: Final = 2
 
-VISION_RANGE: Final = 100
+VISION_RANGE: Final = 25
 
 """
 TODO
@@ -30,12 +33,20 @@ follow phermone
 """
 
 
+class AntState(Enum):
+    Searching = auto(),
+    Wandering = auto(),
+    OutOfBounds = auto(),
+
+
 class SimpleAnts(Ant):
     position: list[Vector2]
     velocity: list[Vector2]
     acceleration: list[Vector2]
     direction: list[Vector2]
-    timer: list[float]
+    pheromone_timer: list[float]
+    wandering_timer: list[float]
+    state: list[AntState]
     spawn_pheromone: add_pheromone
     food: Food
 
@@ -44,37 +55,67 @@ class SimpleAnts(Ant):
         self.velocity = list()
         self.acceleration = list()
         self.direction = list()
-        self.timer = list()
+        self.pheromone_timer = list()
+        self.wandering_timer = list()
+        self.state = list()
         self.spawn_pheromone = spawn_pheromone
 
     def add(self, position: Vector2):
         self.position.append(position)
         self.velocity.append(Vector2())
         self.acceleration.append(Vector2())
-        self.direction.append(Vector2(1, 0).rotate_rad(random() * 2 * pi))
-        self.timer.append(0)
+        self.direction.append(random_normal_vector())
+        self.pheromone_timer.append(0)
+        self.wandering_timer.append(0)
+        self.state.append(AntState.Wandering)
 
     def update(self, dt: float):
 
         for i, (position, velocity, acceleration, direction) in enumerate(zip(*self.movment_bundle(), self.direction)):
+
             apply_movement_physics(position, velocity, acceleration, dt)
 
-            if bounds(position) and velocity.length_squared() != 0:
-                dirs = search_vision_cone(
-                    position, velocity.normalize(), self.food.position)
+            foods: list[tuple[float, int, Vector2]] = list()
 
-                if len(dirs) > 0:
-                    dirs.sort(key=lambda x: x[0])
-                    direction.xy = dirs[0][2]
-                    if dirs[0][0] < ANT_RADIUS:
-                        self.food.position.remove(dirs[0][1])
+            if not bounds(position):
+                direction.xy = (WORLD_SIZE/2 - position).normalize()
+                self.state[i] = AntState.OutOfBounds
+            else:
+                if velocity.length_squared() != 0:
+                    foods = search_vision_cone(
+                        position, velocity.normalize(), self.food.position)
+
+            match self.state[i]:
+                case AntState.Wandering:
+
+                    if len(foods):
+                        self.state[i] = AntState.Searching
+
+                    self.wandering_timer[i] += dt
+                    time = self.wandering_timer[i]
+                    if time >= WANDER_DELAY:
+                        direction.xy = random_normal_vector()
+                        self.wandering_timer[i] = time % WANDER_DELAY
+
+                case AntState.OutOfBounds:
+                    if bounds(position):
+                        self.state[i] = AntState.Wandering
+
+                case AntState.Searching:
+                    if len(foods):
+                        foods.sort(key=lambda x: x[0])
+                        direction.xy = foods[0][2]
+                        if foods[0][0] < ANT_RADIUS:
+                            self.food.position.remove(foods[0][1])
+                    else:
+                        self.state[i] = AntState.Wandering
 
             acceleration += direction * ANT_ACCELERATION
 
-            self.timer[i] += dt
-            time = self.timer[i]
+            self.pheromone_timer[i] += dt
+            time = self.pheromone_timer[i]
             if time >= PHEROMONE_DELAY:
-                self.timer[i] = time % PHEROMONE_DELAY
+                self.pheromone_timer[i] = time % PHEROMONE_DELAY
                 self.spawn_pheromone(position.copy())
 
     def draw(self, screen: Surface):
@@ -101,6 +142,6 @@ def search_vision_cone(position: Vector2, direction: Vector2, targets: ChunkedDa
         dist = sqrt(dist)
         dir = diff / dist
         dot = direction.dot(dir)
-        if dot > .5:
+        if dot > .3:
             dirs.append((dist, i, dir.copy()))
     return dirs

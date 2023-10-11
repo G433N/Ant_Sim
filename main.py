@@ -53,5 +53,7 @@ while running:
         ChunkedData.draw(screen)
 
     pygame.display.flip()
-    dt = 0.01  # clock.tick(60) / 1000  # limits FPS to 60
+    dt = clock.tick(30) / 1000  # limits FPS to 60
+    print(len(pheromones.position), clock.get_fps())
+
 pygame.quit()

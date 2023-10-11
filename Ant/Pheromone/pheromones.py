@@ -1,6 +1,7 @@
 from typing import Final
 
 from pygame import Vector2, draw, Surface
+import pygame
 
 
 DECAY_RATE: Final = 1
@@ -14,10 +15,13 @@ class Pheromones:
 
     position: list[Vector2]
     strength: list[float]
+    surface: Surface
 
     def __init__(self) -> None:
         self.position = list()
         self.strength = list()
+        self.surface = Surface((5, 5), pygame.SRCALPHA)
+        draw.circle(self.surface, PHEROMONE_COLOR, (3, 3), 2)
 
     def add(self, position: Vector2):
         self.position.append(position)
@@ -41,5 +45,5 @@ class Pheromones:
             self.strength.pop(i)
 
     def draw(self, screen: Surface):
-        for position, radius in zip(self.position, self.strength):
-            draw.circle(screen, PHEROMONE_COLOR, position, radius)
+        for position in self.position:
+            screen.blit(self.surface, position)
