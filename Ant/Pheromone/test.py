@@ -2,5 +2,4 @@
 
 
 
-for x in range(10):
-    print(bin(1<<(x<<1)))
+print(1<<(-3<<1))
