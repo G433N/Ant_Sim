@@ -28,7 +28,7 @@ food.add(3 * WORLD_SIZE/4, 20, 100)
 ants.food = food
 
 show_chunk = False
-n = 0
+n = 1
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -51,9 +51,11 @@ while running:
         ChunkedData.draw(screen)
 
     pygame.display.flip()
-    dt = clock.tick(120) / 1000  # limits FPS to 60
-    if n % 60 == 0:
-        print(len(ants.position), clock.get_fps())
+    dt = clock.tick(60) / 1000  # limits FPS to 60
+    if n == 1000:
+        break
+        pass
+        # print(len(ants.position), clock.get_fps())
     n += 1
 
 pygame.quit()
