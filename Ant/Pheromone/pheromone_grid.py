@@ -92,9 +92,8 @@ class Pheromone_Grid:
         if self.diffusion_timer >= DIFFUSION_TIME:
 
             self.diffusion_timer = self.diffusion_timer % DIFFUSION_TIME
-            grid_tuple = tuple(self.grid_list)
             self.grid_list = generate_diffused_list(
-                grid_tuple, generate_diffusion_amount(grid_tuple))
+                self.grid_list, generate_diffusion_amount(self.grid_list))
 
             gen = (min(e//8, 255) for e in self.grid_list)
             self.color_grid = tuple(
@@ -142,7 +141,7 @@ def not_left_or_right(i: int):
     return not left(i) or right(i)
 
 
-def generate_diffusion_amount(grid_list: tuple[int, ...]):
+def generate_diffusion_amount(grid_list: list[int]):
 
     gen = (
         (DIFFUSION_EDGE * value) //
@@ -155,12 +154,13 @@ def generate_diffusion_amount(grid_list: tuple[int, ...]):
     return tuple(gen)
 
 
-def generate_diffused_list(grid_list: tuple[int, ...], grid_diffusion_amount: tuple[int, ...]):
+def generate_diffused_list(grid_list: list[int], grid_diffusion_amount: tuple[int, ...]):
     new_grid_list: list[int] = []
 
     for i in range(prod(GRID_SIZE)):
 
-        t, b, l, r = top(i), bottom(i), left(i), right(i)
+        s = ~BORDER_GRID[i]
+        t, b, l, r = (s >> 3) & 1, (s >> 2) & 1, (s >> 1) & 1, s & 1
 
         s: int = grid_list[i] - (4 - (t+b+l+r)
                                  ) * grid_diffusion_amount[i]
