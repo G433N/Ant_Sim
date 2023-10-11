@@ -17,7 +17,7 @@ def generate_chunk_index_tuple(
     
     sub_grid_index_list: tuple[int,...] = ()
     for i in range(prod(chunk_grid_size)):
-        sub_grid_index_list += (4*( (i%chunk_grid_size[0])+grid_size[0]*(i//chunk_grid_size[0]) ),)
+        sub_grid_index_list += (4*( (i%chunk_grid_size[0]) + grid_size[0]*(i//chunk_grid_size[0]) ),)
     return sub_grid_index_list
 
 CHUNK_INDEX_TUPLE: Final = generate_chunk_index_tuple()
@@ -31,11 +31,26 @@ def get_grid_index_from_chunk(
     for i in range(chunk_size**2):
         yield chunk_start_index + i%chunk_size + grid_size[0]*(i//chunk_size)
 
-def generate_hex_map_cases(index: int , grid_size: tuple[int,int] = GRID_SIZE):
-    top: bool = index < grid_size[0]
-    bottom: bool = index > grid_size[0]*(grid_size[1]-2)
-    left: bool = index % grid_size[0] == 0
-    right: bool = (index+1) % grid_size[0] == 0
+def generate_hex_map_cases(
+        chunk_grid_size: tuple[int,int] = CHUNK_GRID_SIZE,
+        grid_size: tuple[int,int] = GRID_SIZE
+        ):
+    
+    hex_map:int = 0
+    for i in range(prod(chunk_grid_size)):
+        not_top: bool = i >= grid_size[0]
+        not_bottom: bool = i <= grid_size[0]*(grid_size[1]-2)
+        not_left: bool = i % grid_size[0] != 0
+        not_right: bool = (i+1) % grid_size[0] != 0
+
+        hex: int = not_top<<3 | not_bottom<<2 | not_left<<1 | not_right
+
+        hex_map |= hex<<(4*i)
+    return hex_map
+
+HEX_MAP_CASES: int = generate_hex_map_cases()
+
+
 
 
 @dataclass
