@@ -63,32 +63,39 @@ HEX_MAP_CASES: int = generate_hex_map_cases()
 
 @dataclass
 class Chunk_Grid:
+    """Chunking system built from a large bitmap"""
     bit_map: int
 
     def __init__(self):
         self.bit_map = 0
 
     def add(self, index: int):
+        """adding the chunk on that index to the active chunks"""
         self.bit_map |= (1 << (index << 1))
 
         self.turn_on_lazy_around_index(index)
 
     def flip(self, index:int):
+        """flipping the chunk on that index from active to inactive or vise versa """
         self.bit_map ^= (1 << (index << 1))
 
         self.uppdate_lazy_around_index(index)
 
     def remove(self, index:int):
+        """removing the chunk on that index from the active chunks"""
         self.bit_map ^= (self.bit_map & (1 << (index << 1)))
 
         self.uppdate_lazy_around_index(index)
 
     def any_neighbour_active(
+        
             self,
             index: int,
             chunk_grid_len: int = CHUNK_GRID_LEN
-    ):
-
+    ) -> bool:
+        """
+        Checking if any of the neighbouring chunks is active and also if the index is out of bounds
+        """
         return bool(
             0 <= index
             and index < chunk_grid_len
@@ -98,7 +105,12 @@ class Chunk_Grid:
             self,
             index: int,
             chunk_grid_size: tuple[int, int] = CHUNK_GRID_SIZE
-    ):
+    ) -> None:
+        """
+        Uppdates neighbouring chunks to check if they should be lazy loaded or inactive
+        """
+
+
         # index for chunk above (index)
         top_index = index - chunk_grid_size[0]
         # index for chunk bellow (index)
@@ -161,7 +173,9 @@ class Chunk_Grid:
             self,
             index: int
     ):
-
+        """
+        Forces neighbouring chunks to be lazy loaded
+        """
         self.bit_map |= neighbour_indexes(index, 1)
 
     def __str__(
@@ -182,8 +196,11 @@ def neighbour_indexes(
         intra_chunk_offset: int,  # offset for lazy or active
         chunk_grid_size: tuple[int, int] = CHUNK_GRID_SIZE,
         hex_map: int = HEX_MAP_CASES,
-):
-
+) -> int:
+    """
+    generates a smaller bitmap of the neighbouring chunks 
+    scaled to be used seamlesly with the large bit map in the chunk class
+    """
 
     top = (
         # bool if there is a chunk above
