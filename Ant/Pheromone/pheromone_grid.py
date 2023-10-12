@@ -1,11 +1,13 @@
 from dataclasses import dataclass
 from math import prod
 
-from typing import Final
+from typing import Callable, Final
 
 from pygame import Color, Surface, Vector2
 import pygame
 from Util.globals import SCREEN_SIZE
+
+COLORS = 50
 
 DIFFUSION_TIME: Final = 0.05
 DECAY_TIME: Final = 1
@@ -63,14 +65,27 @@ class Pheromone_Grid:
     decay_timer: float
     grid_list: list[int]
     len: int
-    color_grid: list[Color]
+    color_grid: list[int]
+    color_scale: list[int]
+    sprites: list[Surface]
 
     def __init__(self):
         self.diffusion_timer = 0
         self.decay_timer = 0
         self.len = prod(GRID_SIZE)
         self.grid_list = [0] * self.len
-        self.color_grid = [Color(0, 120, 50) for _ in range(self.len)]
+        self.color_grid = [0] * self.len
+        color_map: Callable[[int], int] = lambda a: (MAX_PER_TILE * a)//COLORS
+
+        self.color_scale = [color_map(a) for a in range(COLORS+1)]
+
+        self.sprites = [Surface((CELL_SIZE, CELL_SIZE), pygame.SRCALPHA)
+                        for _ in range(COLORS+1)]
+
+        for color, surface in zip(get_colors(self.color_scale), self.sprites):
+            pygame.draw.rect(surface, color, (0, 0, CELL_SIZE, CELL_SIZE))
+        print(self.color_scale, len(self.sprites))
+        print(self.sprites)
 
     def update(self, dt: float):
         self.diffusion_timer += dt
@@ -83,14 +98,14 @@ class Pheromone_Grid:
                    for i in range(self.len)]
             self.grid_list = new
 
-            self.color_grid = get_color_grid(self.grid_list)
+            self.color_grid = get_color_scale(self.grid_list, self.color_scale)
 
         if self.diffusion_timer >= DIFFUSION_TIME:
             self.diffusion_timer = self.diffusion_timer % DIFFUSION_TIME
             self.grid_list = generate_diffused_list(
                 self.grid_list, generate_diffusion_amount(self.grid_list))
 
-            self.color_grid = get_color_grid(self.grid_list)
+            self.color_grid = get_color_scale(self.grid_list, self.color_scale)
 
     def add(self,
             position: Vector2,
@@ -118,10 +133,9 @@ class Pheromone_Grid:
             for x in range(grid_size[0]):
 
                 i = x+y*(grid_size[0])
-                if (self.color_grid[i] != Color(0, 120, 50)):
-                    rect = pygame.Rect(x*CELL_SIZE, y*CELL_SIZE,
-                                       CELL_SIZE, CELL_SIZE)
-                    pygame.draw.rect(screen, self.color_grid[i], rect)
+                if (self.color_grid[i] != 0):
+                    screen.blit(
+                        self.sprites[self.color_grid[i]], (x * CELL_SIZE, y * CELL_SIZE))
 
     def sum(self):
         return sum(self.grid_list)
@@ -149,7 +163,7 @@ def generate_diffusion_amount(grid_list: list[int]):
 
 
 def generate_diffused_list(grid_list: list[int], grid_diffusion_amount: tuple[int, ...]):
-    new_grid_list: list[int] = []
+    new_grid_list: list[int] = list()
 
     for i in range(prod(GRID_SIZE)):
 
@@ -170,13 +184,13 @@ def generate_diffused_list(grid_list: list[int], grid_diffusion_amount: tuple[in
 
         if not (l):
             s += grid_diffusion_amount[i - 1]
-
-        new_grid_list.append(min(s, MAX_PER_TILE))
+        s = min(s, MAX_PER_TILE)
+        new_grid_list.append(s)
 
     return new_grid_list
 
 
-def get_color_grid(grid_list: list[int]):
+def get_colors(grid_list: list[int]):
     l: list[Color] = list()
     for e in grid_list:
         a = min(e//8, 255)
@@ -186,6 +200,19 @@ def get_color_grid(grid_list: list[int]):
         )
 
     return l
+
+
+def get_color_scale(grid_list: list[int], color_scale: list[int]):
+
+    color_result: list[int] = list()
+    for v in grid_list:
+        for i, s in enumerate(color_scale):
+            if v <= s:
+                color_result.append(i)
+                break
+        else:
+            raise ValueError("Out of bound colors")
+    return color_result
 
 
 def decay(x: int) -> int:
