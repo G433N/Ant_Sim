@@ -84,8 +84,6 @@ class Pheromone_Grid:
 
         for color, surface in zip(get_colors(self.color_scale), self.sprites):
             pygame.draw.rect(surface, color, (0, 0, CELL_SIZE, CELL_SIZE))
-        print(self.color_scale, len(self.sprites))
-        print(self.sprites)
 
     def update(self, dt: float):
         self.diffusion_timer += dt
