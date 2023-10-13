@@ -29,8 +29,8 @@ TODO
 Random ant movement offset
 Search for food
 Return home with food
-Switch phermone type and internal state
-follow phermone
+Switch pheromone type and internal state
+follow pheromone
 """
 
 
@@ -72,7 +72,7 @@ class SimpleAnts(Ant):
 
     def update(self, dt: float):
 
-        for i, (position, velocity, acceleration, direction) in enumerate(zip(*self.movment_bundle(), self.direction)):
+        for i, (position, velocity, acceleration, direction) in enumerate(zip(*self.movement_bundle(), self.direction)):
 
             apply_movement_physics(position, velocity, acceleration, dt)
 
@@ -132,7 +132,7 @@ class SimpleAnts(Ant):
 
 def search_vision_cone(position: Vector2, direction: Vector2, targets: ChunkedData[Vector2]):
     dirs: list[tuple[float, int, Vector2]] = list()
-    for i, target in targets.get_neighbourhood(position):
+    for i, target in targets.get_neighborhood(position):
         diff = target - position
         dist = diff.length_squared()
         if dist > VISION_RANGE**2:
