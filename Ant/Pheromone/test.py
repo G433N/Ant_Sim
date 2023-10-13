@@ -1,17 +1,42 @@
 
 
-from grid_chunking import Chunk_Grid
 
-chunk = Chunk_Grid()
+from typing import Any
+import numpy
+np = numpy
+shape = (3,5)
+x = 3
+m: np.ndarray[int, np.dtype[Any]] = np.zeros(shape,int)
 
-# chunk.add(index) 
-# is for adding the chunk on that index to the active chunks
-# (fastest of the three)
 
-# chunk.remove(index) 
-# is for removing the chunk on that index from the active chunks
-# (prob slowest of the three)
+m[2][1] += 8
+m[1][3] += 43
 
-# chunk.flipp(index)
-# is for flipping the chunk on that index from active to inactive or vise versa 
-# (prob faster than remove)
+
+
+
+def diffusion(arr: np.ndarray[int, np.dtype[Any]]):
+    vertical_arr = diffusion_stack(arr)
+    horizon_arr = diffusion_stack(np.transpose(arr))
+    return (
+        vertical_arr[:-2]
+        + vertical_arr[2:]
+        + np.transpose(
+            horizon_arr[:-2]
+            + horizon_arr[2:]
+        )
+        - 4*arr)
+
+
+def diffusion_stack(arr: np.ndarray[int, np.dtype[Any]]):
+
+    return np.vstack((arr[0], arr, arr[-1]))
+
+def diffused_array(arr: np.ndarray[int, np.dtype[Any]]):
+    return arr + diffusion(arr//6)
+
+
+print(f"{m}\n")
+for i in range(2):
+    m = diffused_array(m)
+    print(f"{m}\n")
