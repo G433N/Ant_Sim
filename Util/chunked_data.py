@@ -14,7 +14,7 @@ TODO: Maybe make a list for index -> chunk so no need for search
 CHUNK_SIZE = 20
 
 
-def get_neighbourhood(x: int):
+def get_neighborhood(x: int):
     return (x-1, x, x+1, -1, 0, 1, -x-1, -x, -x+1)
 
 
@@ -47,8 +47,8 @@ class ChunkedData[T]:
         x, y = int(x), int(y)
         return x + y * self.dimensions.x
 
-    def add(self, value: T, positon: Vector2):
-        chunk = self.get_chunk_index(positon)
+    def add(self, value: T, position: Vector2):
+        chunk = self.get_chunk_index(position)
         return self.add_to_chunk(value, chunk)
 
     def add_to_chunk(self, value: T, chunk: int):
@@ -72,7 +72,7 @@ class ChunkedData[T]:
         for i, s in enumerate(self.chunks):
             if index in s:
                 return i
-        raise ValueError("Unvalid index")
+        raise ValueError("Invalid index")
 
     def enumerate_chunk(self, chunk: int):
         for i in self.chunks[chunk]:
@@ -83,7 +83,7 @@ class ChunkedData[T]:
             for i, value in self.enumerate_chunk(chunk):
                 yield i, value
 
-    def enumerate_neighbourhood(self, chunk: int):
+    def enumerate_neighborhood(self, chunk: int):
         assert 0 <= chunk and chunk < self.len
         not_left = not chunk % self.dimensions.x == 0
         not_right = not (chunk+1) % self.dimensions.x == 0
@@ -96,13 +96,13 @@ class ChunkedData[T]:
             not_left and not_bottom, not_bottom, not_right and not_bottom
         )
 
-        neighbourhood = get_neighbourhood(self.dimensions.x)
-        gen = (chunk + v for b, v in zip(map, neighbourhood) if b)
+        neighborhood = get_neighborhood(self.dimensions.x)
+        gen = (chunk + v for b, v in zip(map, neighborhood) if b)
         return self.enumerate_chunks(gen)
 
-    def get_neighbourhood(self, position: Vector2):
+    def get_neighborhood(self, position: Vector2):
         chunk = self.get_chunk_index(position)
-        return self.enumerate_neighbourhood(chunk)
+        return self.enumerate_neighborhood(chunk)
 
     def get_data(self):
         return [v for v in self._data if not v is None]

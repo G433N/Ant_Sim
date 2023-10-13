@@ -57,4 +57,10 @@ Number of tests: 10
 Number of iters per test: 1000
 Median: 6.349868299999798
 Average: 6.1996555199997605
+______________________________
+If classes instead of lists
+Number of tests: 10
+Number of iters per test: 1000
+Median: 5.732934099999511
+Average: 5.741801739999846
 """
