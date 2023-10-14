@@ -9,8 +9,8 @@ import numpy as np
 
 COLORS = 50  # Must divide MAX_PER_TILE
 
-DIFFUSION_TIME: Final = 0.05
-DECAY_TIME: Final = 0.5
+DIFFUSION_TIME: Final = 0.10
+DECAY_TIME: Final = 1.5
 
 DIFFUSION_EDGE: Final = 1
 DIFFUSION_MIDDLE: Final = 50
