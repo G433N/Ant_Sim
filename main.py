@@ -30,7 +30,7 @@ ants.food = food
 show_chunk = False
 n = 1
 TPS = 60
-FPS = 5
+FPS = 20
 draw_time: float = 1 / FPS
 while running:
     for event in pygame.event.get():
@@ -61,7 +61,7 @@ while running:
 
     dt = clock.tick(TPS) / 1000  # limits FPS to 60
     draw_time += dt
-    if n == -1:
+    if n == 2000:
         break
         pass
         # print(len(ants.position), clock.get_fps())
