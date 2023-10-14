@@ -6,8 +6,7 @@ from typing import Any, Callable, Final
 from pygame import Color, Surface, Vector2
 import pygame
 from Util.globals import SCREEN_SIZE
-import numpy
-np = numpy
+import numpy as np
 
 COLORS = 50
 
