@@ -7,14 +7,14 @@ import pygame
 from Util.globals import SCREEN_SIZE
 import numpy as np
 
-COLORS = 50
+COLORS = 50  # Must divide MAX_PER_TILE
 
 DIFFUSION_TIME: Final = 0.05
 DECAY_TIME: Final = 0.5
 
 DIFFUSION_EDGE: Final = 1
 DIFFUSION_MIDDLE: Final = 50
-MAX_PER_TILE: Final = 2047
+MAX_PER_TILE: Final = 2000
 
 
 def DIFFUSION_STRENGTH_SUM(edge: int):
@@ -24,7 +24,7 @@ def DIFFUSION_STRENGTH_SUM(edge: int):
 DIFFUSION_STRENGTH_MAP: Final = (DIFFUSION_STRENGTH_SUM(
     2), DIFFUSION_STRENGTH_SUM(3), DIFFUSION_STRENGTH_SUM(4))
 
-CELL_SIZE: Final = 5
+CELL_SIZE: Final = 10
 
 
 GRID_SIZE: Final = (SCREEN_SIZE[0]//CELL_SIZE, SCREEN_SIZE[1]//CELL_SIZE)
@@ -67,6 +67,7 @@ class Pheromone_Grid:
     len: int
     color_grid: list[int]
     color_scale: list[int]
+    color_step: int
     sprites: list[Surface]
     grid_array: np.ndarray[int, np.dtype[np.int16]]
 
@@ -75,11 +76,11 @@ class Pheromone_Grid:
         self.decay_timer = 0
         self.len = prod(GRID_SIZE)
         self.grid_list = [0] * self.len
-        self.color_grid = [0] * self.len
         self.grid_array = np.zeros(GRID_SIZE, np.int16)
         color_map: Callable[[int], int] = lambda a: (MAX_PER_TILE * a)//COLORS
 
         self.color_scale = [color_map(a) for a in range(COLORS+1)]
+        self.color_step = self.color_scale[1]
 
         self.sprites = [Surface((CELL_SIZE, CELL_SIZE), pygame.SRCALPHA)
                         for _ in range(COLORS+1)]
@@ -96,16 +97,10 @@ class Pheromone_Grid:
 
             self.grid_array = decay(self.grid_array)
 
-            self.color_grid = get_color_scale(
-                self.grid_array, self.color_scale)
-
         if self.diffusion_timer >= DIFFUSION_TIME:
             self.diffusion_timer = self.diffusion_timer % DIFFUSION_TIME
             self.grid_array = np.fmin(
                 diffused_array(self.grid_array), MAX_PER_TILE)
-
-            self.color_grid = get_color_scale(
-                self.grid_array, self.color_scale)
 
     def add(self,
             position: Vector2,
@@ -125,13 +120,16 @@ class Pheromone_Grid:
 
     def draw(self, screen: Surface, grid_size: tuple[int, int] = GRID_SIZE):
 
+        color_grid = self.grid_array // self.color_step
+
         for y in range(grid_size[1]):
             for x in range(grid_size[0]):
 
-                i = x+y*(grid_size[0])
-                if (self.color_grid[i] != 0):
+                if (color_grid[x][y] != 0):
                     screen.blit(
-                        self.sprites[self.color_grid[i]], (x * CELL_SIZE, y * CELL_SIZE))
+                        self.sprites[color_grid[x][y]  # type: ignore
+                                     ], (x * CELL_SIZE, y * CELL_SIZE)
+                    )
 
     def sum(self):
         return sum(self.grid_array)
@@ -196,19 +194,6 @@ def get_colors(grid_list: list[int]):
         )
 
     return l
-
-
-def get_color_scale(arr: np.ndarray[int, np.dtype[np.int16]], color_scale: list[int]):
-    color_result: list[int] = list()
-    for y in range(GRID_SIZE[1]):
-        for x in range(GRID_SIZE[0]):
-            for i, s in enumerate(color_scale):
-                if arr[x][y] <= s:
-                    color_result.append(i)
-                    break
-            else:
-                raise ValueError("Out of bound colors")
-    return color_result
 
 
 def decay(x: np.ndarray[int, np.dtype[np.int16]]) -> np.ndarray[int, np.dtype[np.int16]]:
