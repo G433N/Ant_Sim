@@ -1,16 +1,18 @@
 from dataclasses import dataclass
 from math import prod
 
-from typing import Callable, Final
+from typing import Any, Callable, Final
 
 from pygame import Color, Surface, Vector2
 import pygame
 from Util.globals import SCREEN_SIZE
+import numpy
+np = numpy
 
 COLORS = 50
 
 DIFFUSION_TIME: Final = 0.05
-DECAY_TIME: Final = 1
+DECAY_TIME: Final = 0.5
 
 DIFFUSION_EDGE: Final = 1
 DIFFUSION_MIDDLE: Final = 50
@@ -68,6 +70,7 @@ class Pheromone_Grid:
     color_grid: list[int]
     color_scale: list[int]
     sprites: list[Surface]
+    grid_array: np.ndarray[int, np.dtype[np.int16]]
 
     def __init__(self):
         self.diffusion_timer = 0
@@ -75,7 +78,9 @@ class Pheromone_Grid:
         self.len = prod(GRID_SIZE)
         self.grid_list = [0] * self.len
         self.color_grid = [0] * self.len
+        self.grid_array = np.zeros(GRID_SIZE, np.int16)
         color_map: Callable[[int], int] = lambda a: (MAX_PER_TILE * a)//COLORS
+
 
         self.color_scale = [color_map(a) for a in range(COLORS+1)]
 
@@ -92,18 +97,15 @@ class Pheromone_Grid:
         if self.decay_timer >= DECAY_TIME:
             self.decay_timer = self.decay_timer % DECAY_TIME
 
-            new = [min(decay(self.grid_list[i]), MAX_PER_TILE)
-                   for i in range(self.len)]
-            self.grid_list = new
+            self.grid_array = decay(self.grid_array)
 
-            self.color_grid = get_color_scale(self.grid_list, self.color_scale)
+            self.color_grid = get_color_scale(self.grid_array, self.color_scale)
 
         if self.diffusion_timer >= DIFFUSION_TIME:
             self.diffusion_timer = self.diffusion_timer % DIFFUSION_TIME
-            self.grid_list = generate_diffused_list(
-                self.grid_list, generate_diffusion_amount(self.grid_list))
+            self.grid_array = np.fmin(diffused_array(self.grid_array),MAX_PER_TILE)
 
-            self.color_grid = get_color_scale(self.grid_list, self.color_scale)
+            self.color_grid = get_color_scale(self.grid_array, self.color_scale)
 
     def add(self,
             position: Vector2,
@@ -112,18 +114,13 @@ class Pheromone_Grid:
             cell_size: int = CELL_SIZE
             ):
         x = int(position.x/cell_size)
-        y = int(grid_size[0]*int(position.y/cell_size))
-        index = x + y
-        if 0 > index or self.len <= index:
+        y = int(position.y/cell_size)
+        if 0 > x or 0 > y or  grid_size[0] <= x or grid_size[1] <= y:
             return
-        self.grid_list[index] += strength
+        self.grid_array[x][y] = min(self.grid_array[x][y]+strength,MAX_PER_TILE)
 
     def __str__(self):
-        s = ""
-        for i, x in enumerate(self.grid_list):
-            b = (GRID_SIZE[0]-i-1) % GRID_SIZE[0] == 0
-            s += f"{round(x, 3): <7}" + 2 * "\n" * b
-        return s + f"\n{self.sum()}"
+        return f"\n{self.grid_array}\n"
 
     def draw(self, screen: Surface, grid_size: tuple[int, int] = GRID_SIZE):
 
@@ -136,7 +133,7 @@ class Pheromone_Grid:
                         self.sprites[self.color_grid[i]], (x * CELL_SIZE, y * CELL_SIZE))
 
     def sum(self):
-        return sum(self.grid_list)
+        return sum(self.grid_array)
 
 
 def not_top_or_bottom(i: int):
@@ -200,19 +197,44 @@ def get_colors(grid_list: list[int]):
     return l
 
 
-def get_color_scale(grid_list: list[int], color_scale: list[int]):
+def get_color_scale(arr:np.ndarray[int, np.dtype[np.int16]], color_scale: list[int]):
 
     color_result: list[int] = list()
-    for v in grid_list:
-        for i, s in enumerate(color_scale):
-            if v <= s:
-                color_result.append(i)
-                break
-        else:
-            raise ValueError("Out of bound colors")
+    for y in range(GRID_SIZE[1]):
+        for x in range(GRID_SIZE[0]):
+            for i, s in enumerate(color_scale):
+                if arr[x][y] <= s:
+                    color_result.append(i)
+                    break
+            else:
+                raise ValueError("Out of bound colors")
     return color_result
 
 
-def decay(x: int) -> int:
-    y = 6
-    return (x-(x >> y)-min(x & ((1 << y)-1), 3))
+def decay(x: np.ndarray[int, np.dtype[Any]]) -> np.ndarray[int, np.dtype[Any]]:
+    y = 9
+    return (x-(x >> y)-np.fmin(x & ((1 << y)-1), 3))
+
+
+
+
+def diffusion(arr: np.ndarray[int, np.dtype[Any]]):
+    vertical_arr = diffusion_stack(arr)
+    horizon_arr = diffusion_stack(np.transpose(arr))
+    return (
+        vertical_arr[:-2]
+        + vertical_arr[2:]
+        + np.transpose(
+            horizon_arr[:-2]
+            + horizon_arr[2:]
+        )
+        - 4*arr
+    )
+
+
+def diffusion_stack(arr: np.ndarray[int, np.dtype[Any]]):
+    return np.vstack((arr[0], arr, arr[-1]))
+
+
+def diffused_array(arr: np.ndarray[int, np.dtype[Any]]):
+    return arr + diffusion(arr//20)
