@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from math import prod
-
-from typing import Any, Callable, Final
+from typing import Callable, Final
 
 from pygame import Color, Surface, Vector2
 import pygame
@@ -25,7 +24,7 @@ def DIFFUSION_STRENGTH_SUM(edge: int):
 DIFFUSION_STRENGTH_MAP: Final = (DIFFUSION_STRENGTH_SUM(
     2), DIFFUSION_STRENGTH_SUM(3), DIFFUSION_STRENGTH_SUM(4))
 
-CELL_SIZE: Final = 10
+CELL_SIZE: Final = 5
 
 
 GRID_SIZE: Final = (SCREEN_SIZE[0]//CELL_SIZE, SCREEN_SIZE[1]//CELL_SIZE)
@@ -80,7 +79,6 @@ class Pheromone_Grid:
         self.grid_array = np.zeros(GRID_SIZE, np.int16)
         color_map: Callable[[int], int] = lambda a: (MAX_PER_TILE * a)//COLORS
 
-
         self.color_scale = [color_map(a) for a in range(COLORS+1)]
 
         self.sprites = [Surface((CELL_SIZE, CELL_SIZE), pygame.SRCALPHA)
@@ -98,13 +96,16 @@ class Pheromone_Grid:
 
             self.grid_array = decay(self.grid_array)
 
-            self.color_grid = get_color_scale(self.grid_array, self.color_scale)
+            self.color_grid = get_color_scale(
+                self.grid_array, self.color_scale)
 
         if self.diffusion_timer >= DIFFUSION_TIME:
             self.diffusion_timer = self.diffusion_timer % DIFFUSION_TIME
-            self.grid_array = np.fmin(diffused_array(self.grid_array),MAX_PER_TILE)
+            self.grid_array = np.fmin(
+                diffused_array(self.grid_array), MAX_PER_TILE)
 
-            self.color_grid = get_color_scale(self.grid_array, self.color_scale)
+            self.color_grid = get_color_scale(
+                self.grid_array, self.color_scale)
 
     def add(self,
             position: Vector2,
@@ -114,9 +115,10 @@ class Pheromone_Grid:
             ):
         x = int(position.x/cell_size)
         y = int(position.y/cell_size)
-        if 0 > x or 0 > y or  grid_size[0] <= x or grid_size[1] <= y:
+        if 0 > x or 0 > y or grid_size[0] <= x or grid_size[1] <= y:
             return
-        self.grid_array[x][y] = min(self.grid_array[x][y]+strength,MAX_PER_TILE)
+        self.grid_array[x][y] = min(
+            self.grid_array[x][y]+strength, MAX_PER_TILE)
 
     def __str__(self):
         return f"\n{self.grid_array}\n"
@@ -196,8 +198,7 @@ def get_colors(grid_list: list[int]):
     return l
 
 
-def get_color_scale(arr:np.ndarray[int, np.dtype[np.int16]], color_scale: list[int]):
-
+def get_color_scale(arr: np.ndarray[int, np.dtype[np.int16]], color_scale: list[int]):
     color_result: list[int] = list()
     for y in range(GRID_SIZE[1]):
         for x in range(GRID_SIZE[0]):
@@ -210,14 +211,12 @@ def get_color_scale(arr:np.ndarray[int, np.dtype[np.int16]], color_scale: list[i
     return color_result
 
 
-def decay(x: np.ndarray[int, np.dtype[Any]]) -> np.ndarray[int, np.dtype[Any]]:
+def decay(x: np.ndarray[int, np.dtype[np.int16]]) -> np.ndarray[int, np.dtype[np.int16]]:
     y = 9
     return (x-(x >> y)-np.fmin(x & ((1 << y)-1), 3))
 
 
-
-
-def diffusion(arr: np.ndarray[int, np.dtype[Any]]):
+def diffusion(arr: np.ndarray[int, np.dtype[np.int16]]):
     vertical_arr = diffusion_stack(arr)
     horizon_arr = diffusion_stack(np.transpose(arr))
     return (
@@ -231,9 +230,9 @@ def diffusion(arr: np.ndarray[int, np.dtype[Any]]):
     )
 
 
-def diffusion_stack(arr: np.ndarray[int, np.dtype[Any]]):
+def diffusion_stack(arr: np.ndarray[int, np.dtype[np.int16]]):
     return np.vstack((arr[0], arr, arr[-1]))
 
 
-def diffused_array(arr: np.ndarray[int, np.dtype[Any]]):
+def diffused_array(arr: np.ndarray[int, np.dtype[np.int16]]):
     return arr + diffusion(arr//20)
