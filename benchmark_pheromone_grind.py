@@ -5,7 +5,7 @@ from Util.globals import WORLD_SIZE
 
 from Util.util import random_vector
 
-NUMBER_OF_TESTS = 100
+NUMBER_OF_TESTS = 10
 NUMBER_OF_ITERS = 100
 TIME_STEP = 1/60
 
@@ -46,10 +46,5 @@ Number of iters per test: 100
 Median: 0.6175775000001522
 Average: 0.6168156609999733
 _______________________________
-With numpy
-Number of tests: 100
-Number of iters per test: 100
-Median: 0.24034900000000903
-Average: 0.23749985100000204
 _______________________________
 """
