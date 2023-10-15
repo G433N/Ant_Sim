@@ -112,6 +112,10 @@ class SimpleAnts(Ant):
                         self.state[i] = AntState.Wandering
 
             acceleration += direction * ANT_ACCELERATION
+            if velocity.length_squared() > 0:
+                v = velocity.normalize()
+                acceleration += -v * ANT_ACCELERATION * \
+                    (1 - v.dot(direction)) * 2/3
 
             self.pheromone_timer[i] += dt
             time = self.pheromone_timer[i]
@@ -143,6 +147,6 @@ def search_vision_cone(position: Vector2, direction: Vector2, targets: ChunkedDa
         dist = sqrt(dist)
         dir = diff / dist
         dot = direction.dot(dir)
-        if dot > .3:
+        if dot > 0:
             dirs.append((dist, i, dir.copy()))
     return dirs
