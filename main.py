@@ -47,9 +47,10 @@ while running:
     nests.update(dt)
 
     if draw_time >= 1/FPS:
+
         screen.fill(pygame.Color(0, 120, 50))
 
-        pheromones.draw(screen)
+        screen.blit(pheromones.draw(), (0, 0))
         nests.draw(screen)
         food.draw(screen)
         ants.draw(screen)
@@ -61,7 +62,7 @@ while running:
 
     dt = clock.tick(TPS) / 1000  # limits FPS to 60
     draw_time += dt
-    if n == 2000:
+    if n == 10000:
         break
         pass
         # print(len(ants.position), clock.get_fps())

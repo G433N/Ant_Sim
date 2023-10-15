@@ -9,11 +9,11 @@ import numpy as np
 
 COLORS = 50  # Must divide MAX_PER_TILE
 
-DIFFUSION_TIME: Final = 0.10
-DECAY_TIME: Final = 1.5
+DIFFUSION_TIME: Final = 2
+DECAY_TIME: Final = 4
 
 DIFFUSION_EDGE: Final = 1
-DIFFUSION_MIDDLE: Final = 50
+DIFFUSION_MIDDLE: Final = 5
 MAX_PER_TILE: Final = 2000
 
 
@@ -24,8 +24,7 @@ def DIFFUSION_STRENGTH_SUM(edge: int):
 DIFFUSION_STRENGTH_MAP: Final = (DIFFUSION_STRENGTH_SUM(
     2), DIFFUSION_STRENGTH_SUM(3), DIFFUSION_STRENGTH_SUM(4))
 
-CELL_SIZE: Final = 10
-
+CELL_SIZE: Final = 5
 
 GRID_SIZE: Final = (SCREEN_SIZE[0]//CELL_SIZE, SCREEN_SIZE[1]//CELL_SIZE)
 
@@ -63,20 +62,20 @@ NOT_RIGHT = 0
 class Pheromone_Grid:
     diffusion_timer: float
     decay_timer: float
-    grid_list: list[int]
     len: int
-    color_grid: list[int]
+    color_grid: np.ndarray[int, np.dtype[np.int16]]
     color_scale: list[int]
     color_step: int
     sprites: list[Surface]
     grid_array: np.ndarray[int, np.dtype[np.int16]]
+    surface: Surface
 
     def __init__(self):
         self.diffusion_timer = 0
         self.decay_timer = 0
         self.len = prod(GRID_SIZE)
-        self.grid_list = [0] * self.len
         self.grid_array = np.zeros(GRID_SIZE, np.int16)
+        self.color_grid = np.zeros(GRID_SIZE, np.int16)
         color_map: Callable[[int], int] = lambda a: (MAX_PER_TILE * a)//COLORS
 
         self.color_scale = [color_map(a) for a in range(COLORS+1)]
@@ -84,6 +83,7 @@ class Pheromone_Grid:
 
         self.sprites = [Surface((CELL_SIZE, CELL_SIZE), pygame.SRCALPHA)
                         for _ in range(COLORS+1)]
+        self.surface = Surface(SCREEN_SIZE, pygame.SRCALPHA)
 
         for color, surface in zip(get_colors(self.color_scale), self.sprites):
             pygame.draw.rect(surface, color, (0, 0, CELL_SIZE, CELL_SIZE))
@@ -104,7 +104,7 @@ class Pheromone_Grid:
 
     def add(self,
             position: Vector2,
-            strength: int = 300,
+            strength: int = 500,
             grid_size: tuple[int, int] = GRID_SIZE,
             cell_size: int = CELL_SIZE
             ):
@@ -118,18 +118,28 @@ class Pheromone_Grid:
     def __str__(self):
         return f"\n{self.grid_array}\n"
 
-    def draw(self, screen: Surface, grid_size: tuple[int, int] = GRID_SIZE):
+    def draw(self, grid_size: tuple[int, int] = GRID_SIZE):
 
-        color_grid = self.grid_array // self.color_step
+        new = self.grid_array // self.color_step
 
+        to_draw: list[tuple[int, int, int]] = list()
         for y in range(grid_size[1]):
             for x in range(grid_size[0]):
-
-                if (color_grid[x][y] != 0):
-                    screen.blit(
-                        self.sprites[color_grid[x][y]  # type: ignore
-                                     ], (x * CELL_SIZE, y * CELL_SIZE)
+                a = new[x][y]
+                if not self.color_grid[x][y] == a:
+                    to_draw.append(
+                        (x, y, a)
                     )
+
+        self.color_grid = new
+
+        while len(to_draw):
+            x, y, i = to_draw.pop()
+            self.surface.blit(
+                self.sprites[i], (x * CELL_SIZE, y * CELL_SIZE)
+            )
+
+        return self.surface
 
     def sum(self):
         return sum(self.grid_array)
