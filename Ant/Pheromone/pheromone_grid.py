@@ -17,45 +17,10 @@ DIFFUSION_MIDDLE: Final = 5
 MAX_PER_TILE: Final = 2000
 
 
-def DIFFUSION_STRENGTH_SUM(edge: int):
-    return edge * DIFFUSION_EDGE + DIFFUSION_MIDDLE
-
-
-DIFFUSION_STRENGTH_MAP: Final = (DIFFUSION_STRENGTH_SUM(
-    2), DIFFUSION_STRENGTH_SUM(3), DIFFUSION_STRENGTH_SUM(4))
-
 CELL_SIZE: Final = 5
 
 GRID_SIZE: Final = (SCREEN_SIZE[0]//CELL_SIZE, SCREEN_SIZE[1]//CELL_SIZE)
 
-
-def top(i: int):
-    return i > GRID_SIZE[0]*(GRID_SIZE[1]-2)
-
-
-def bottom(i: int):
-    return i < GRID_SIZE[0]
-
-
-def left(i: int):
-    return i % GRID_SIZE[0] == 0
-
-
-def right(i: int):
-    return (i+1) % GRID_SIZE[0] == 0
-
-
-BORDER_GRID = tuple(
-    (not top(i)) << 3 |
-    (not bottom(i)) << 2 |
-    (not left(i)) << 1 |
-    (not right(i)) for i in range(prod(GRID_SIZE))
-)
-
-NOT_TOP = 1 << 3
-NOT_BOTTOM = 1 << 2
-NOT_LEFT = 1 << 0
-NOT_RIGHT = 0
 
 
 @dataclass(slots=True)
@@ -104,7 +69,7 @@ class Pheromone_Grid:
 
     def add(self,
             position: Vector2,
-            strength: int = 500,
+            strength: int = 80,
             grid_size: tuple[int, int] = GRID_SIZE,
             cell_size: int = CELL_SIZE
             ):
@@ -144,54 +109,6 @@ class Pheromone_Grid:
     def sum(self):
         return sum(self.grid_array)
 
-
-def not_top_or_bottom(i: int):
-    return not bottom(i) or top(i)
-
-
-def not_left_or_right(i: int):
-    return not left(i) or right(i)
-
-
-def generate_diffusion_amount(grid_list: list[int]):
-
-    gen = (
-        (DIFFUSION_EDGE * value) //
-        DIFFUSION_STRENGTH_MAP[
-            (NOT_TOP | NOT_BOTTOM) & border != 0
-            +
-            (NOT_LEFT | NOT_RIGHT) & border != 0]
-        for value, border in zip(grid_list, BORDER_GRID))
-
-    return tuple(gen)
-
-
-def generate_diffused_list(grid_list: list[int], grid_diffusion_amount: tuple[int, ...]):
-    new_grid_list: list[int] = list()
-
-    for i in range(prod(GRID_SIZE)):
-
-        s = ~BORDER_GRID[i]
-        t, b, l, r = (s >> 3) & 1, (s >> 2) & 1, (s >> 1) & 1, s & 1
-
-        s: int = grid_list[i] - (4 - (t+b+l+r)
-                                 ) * grid_diffusion_amount[i]
-
-        if not (t):
-            s += grid_diffusion_amount[i + GRID_SIZE[0]]
-
-        if not (r):
-            s += grid_diffusion_amount[i + 1]
-
-        if not (b):
-            s += grid_diffusion_amount[i - GRID_SIZE[0]]
-
-        if not (l):
-            s += grid_diffusion_amount[i - 1]
-        s = min(s, MAX_PER_TILE)
-        new_grid_list.append(s)
-
-    return new_grid_list
 
 
 def get_colors(grid_list: list[int]):
