@@ -7,7 +7,6 @@ from Util.chunked_data import ChunkedData
 from Util.globals import SCREEN_SIZE, WORLD_SIZE
 from pygame import Vector2
 
-from Util.util import random_vector
 
 
 pygame.init()
@@ -22,10 +21,8 @@ pheromones = Pheromone_Grid()
 ants = SimpleAnts(pheromones.add)
 nests = AntNets(WORLD_SIZE, ants.add)
 # nests.add(Vector2(300, 500))
-# nests.add(Vector2(900, 300))
+nests.add(Vector2(900, 300))
 
-for _ in range(1000):
-    ants.add(WORLD_SIZE/2)
 
 food = Food()
 food.add(WORLD_SIZE/4, 20, 100)
@@ -66,9 +63,9 @@ while running:
         else:
             screen.fill(pygame.Color(0, 120, 50))
 
-        # nests.draw(screen)
+        nests.draw(screen)
         food.draw(screen)
-        # ants.draw(screen)
+        ants.draw(screen)
 
         if show_chunk:
             ChunkedData.draw(screen)

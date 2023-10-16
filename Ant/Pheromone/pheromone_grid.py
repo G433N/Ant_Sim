@@ -11,13 +11,11 @@ except ImportError:
 from pygame import Surface, Vector2
 from Util.globals import SCREEN_SIZE
 
-COLORS = 50  # Must divide MAX_PER_TILE
-
 DIFFUSION_TIME: Final = .2
 DECAY_TIME: Final = .4
 
-MAX_PER_TILE: Final = 2000
-
+MAX_PER_TILE: Final = 8000
+COLOR_SCALING: Final = MAX_PER_TILE//256
 
 CELL_SIZE: Final = 2
 
@@ -54,7 +52,7 @@ class Pheromone_Grid:
 
     def add(self,
             position: Vector2,
-            strength: int = 240,
+            strength: int = 780,
             grid_size: tuple[int, int] = GRID_SIZE,
             cell_size: int = CELL_SIZE
             ):
@@ -68,10 +66,10 @@ class Pheromone_Grid:
     def __str__(self):
         return f"\n{self.grid_array}\n"
 
-    def draw(self, grid_size: tuple[int, int] = GRID_SIZE):
-        array: np.ndarray[int, np.dtype[np.int32]] = surfarray.pixels3d(
-            self.surface)  # type: ignore
-        a = np.fmin(self.grid_array//8, 255)
+    def draw(self):
+        array = surfarray.pixels3d(self.surface)  # type: ignore
+        
+        a = np.fmin(self.grid_array//COLOR_SCALING, 255)
         c = (4*a)//5
         r = c
         g = np.fmax(120-a, 0)

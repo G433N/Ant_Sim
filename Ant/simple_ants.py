@@ -11,7 +11,7 @@ from Util.globals import WORLD_SIZE
 from Util.movement import apply_movement_physics
 from Util.util import bounds, random_normal_vector
 
-ANT_ACCELERATION: Final = 20*5
+ANT_ACCELERATION: Final = 20
 ANT_COLOR: Final = "black"
 ANT_RADIUS: Final = 3
 
