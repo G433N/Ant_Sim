@@ -46,10 +46,15 @@ Number of iters per test: 100
 Median: 0.6175775000001522
 Average: 0.6168156609999733
 _______________________________
-With numpy
+With numpy Cell Size 5
 Number of tests: 10
 Number of iters per test: 100
 Median: 0.0018706000118982047
 Average: 0.002016169999842532
 _______________________________
+With Numpy Cell Size 1
+Number of tests: 10
+Number of iters per test: 100
+Median: 0.0021859999978914857
+Average: 0.002319889992941171
 """

@@ -55,10 +55,10 @@ while running:
 
     if draw_time >= 1/FPS:
 
-        screen.fill(pygame.Color(0, 120, 50))
-
         if show_pheromones:
             screen.blit(pheromones.draw(), (0, 0))
+        else:
+            screen.fill(pygame.Color(0, 120, 50))
 
         nests.draw(screen)
         food.draw(screen)
