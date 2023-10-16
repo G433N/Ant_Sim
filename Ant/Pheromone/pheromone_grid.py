@@ -2,10 +2,15 @@ from dataclasses import dataclass
 from math import prod
 from typing import Callable, Final
 
+try:
+    import numpy as np
+    import pygame.surfarray as surfarray
+except ImportError:
+    raise ImportError("NumPy and Surfarray are required.")
+
 from pygame import Color, Surface, Vector2
 import pygame
 from Util.globals import SCREEN_SIZE
-import numpy as np
 
 COLORS = 50  # Must divide MAX_PER_TILE
 
@@ -20,7 +25,6 @@ MAX_PER_TILE: Final = 2000
 CELL_SIZE: Final = 5
 
 GRID_SIZE: Final = (SCREEN_SIZE[0]//CELL_SIZE, SCREEN_SIZE[1]//CELL_SIZE)
-
 
 
 @dataclass(slots=True)
@@ -104,11 +108,13 @@ class Pheromone_Grid:
                 self.sprites[i], (x * CELL_SIZE, y * CELL_SIZE)
             )
 
+        a = surfarray.pixels3d(self.surface)
+        print(a)
+
         return self.surface
 
     def sum(self):
         return sum(self.grid_array)
-
 
 
 def get_colors(grid_list: list[int]):
