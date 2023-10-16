@@ -30,6 +30,7 @@ ants.food = food
 
 show_chunk = False
 show_fps = True
+show_pheromones = True
 n = 1
 TPS = 60
 FPS = 20
@@ -45,6 +46,8 @@ while running:
                 draw_time = 1/FPS
             elif event.key == pygame.K_f:
                 show_fps = not show_fps
+            elif event.key == pygame.K_p:
+                show_pheromones = not show_pheromones
 
     pheromones.update(dt)
     ants.update(dt)
@@ -54,7 +57,9 @@ while running:
 
         screen.fill(pygame.Color(0, 120, 50))
 
-        screen.blit(pheromones.draw(), (0, 0))
+        if show_pheromones:
+            screen.blit(pheromones.draw(), (0, 0))
+
         nests.draw(screen)
         food.draw(screen)
         ants.draw(screen)
