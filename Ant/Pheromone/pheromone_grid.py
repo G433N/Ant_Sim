@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from math import prod
-from typing import Callable, Final, cast
-from numpy import ndarray, vectorize
+from typing import Final
 
 try:
     import numpy as np
@@ -9,8 +8,7 @@ try:
 except ImportError:
     raise ImportError("NumPy and Surfarray are required.")
 
-from pygame import Color, Surface, Vector2
-import pygame
+from pygame import Surface, Vector2
 from Util.globals import SCREEN_SIZE
 
 COLORS = 50  # Must divide MAX_PER_TILE
@@ -79,23 +77,17 @@ class Pheromone_Grid:
         return f"\n{self.grid_array}\n"
 
     def draw(self, grid_size: tuple[int, int] = GRID_SIZE):
+        array = surfarray.pixels3d(self.surface)
         a = np.fmin(self.grid_array//8, 255)
         b = (4*a)//5
         r = b.copy()
         g = np.fmax(120-a, 0)
         b = 50 + b
-
         for x in range(CELL_SIZE):
             for y in range(CELL_SIZE):
-                self.color_array[y::CELL_SIZE, x::CELL_SIZE, 0] = r
-                self.color_array[y::CELL_SIZE, x::CELL_SIZE, 1] = g
-                self.color_array[y::CELL_SIZE, x::CELL_SIZE, 2] = b
-
-        surfarray.blit_array(
-            self.surface,
-            self.color_array
-        )
-
+                array[y::CELL_SIZE, x::CELL_SIZE, 0] = r
+                array[y::CELL_SIZE, x::CELL_SIZE, 1] = g
+                array[y::CELL_SIZE, x::CELL_SIZE, 2] = b
         return self.surface
 
     def sum(self):
