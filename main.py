@@ -77,7 +77,7 @@ while running:
 
     dt = clock.tick(TPS) / 1000  # limits FPS to 60
     draw_time += dt
-    if n == 1000:
+    if n == -1000:
         break
     n += 1
 

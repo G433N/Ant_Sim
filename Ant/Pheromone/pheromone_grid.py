@@ -79,10 +79,10 @@ class Pheromone_Grid:
     def draw(self, grid_size: tuple[int, int] = GRID_SIZE):
         array = surfarray.pixels3d(self.surface)
         a = np.fmin(self.grid_array//8, 255)
-        b = (4*a)//5
-        r = b
+        c = (4*a)//5
+        r = c
         g = np.fmax(120-a, 0)
-        b = 50 + b
+        b = 50 + c
         for x in range(CELL_SIZE):
             for y in range(CELL_SIZE):
                 array[y::CELL_SIZE, x::CELL_SIZE, 0] = r

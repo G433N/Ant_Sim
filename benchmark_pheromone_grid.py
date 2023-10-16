@@ -6,7 +6,7 @@ from Util.globals import WORLD_SIZE
 from Util.util import random_vector
 
 NUMBER_OF_TESTS = 10
-NUMBER_OF_ITERS = 100
+NUMBER_OF_ITERS = 1000
 TIME_STEP = 1/60
 
 result: list[float] = list()
