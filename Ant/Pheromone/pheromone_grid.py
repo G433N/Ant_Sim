@@ -34,14 +34,20 @@ class Pheromone_Grid:
     decay_timer: float
     len: int
     grid_array: np.ndarray[int, np.dtype[np.int32]]
+    color_array: np.ndarray[int, np.dtype[np.int32]]
     surface: Surface
 
     def __init__(self):
         self.diffusion_timer = 0
         self.decay_timer = 0
         self.len = prod(GRID_SIZE)
-        self.grid_array = np.zeros(GRID_SIZE, np.int32)
         self.surface = Surface(SCREEN_SIZE)
+        self.grid_array = np.zeros(GRID_SIZE, np.int32)
+        array = np.expand_dims(self.grid_array, axis=2)
+        array = np.repeat(array, 3, axis=2)
+        array = np.repeat(array, CELL_SIZE, 0)
+        array = np.repeat(array, CELL_SIZE, 1)
+        self.color_array = array
 
     def update(self, dt: float):
         self.diffusion_timer += dt
@@ -73,32 +79,27 @@ class Pheromone_Grid:
         return f"\n{self.grid_array}\n"
 
     def draw(self, grid_size: tuple[int, int] = GRID_SIZE):
+        array = np.fmin(self.grid_array//8, 255)
+        x = (4*array)//5
+        r = x.copy()
+        g = np.fmax(120-array, 0)
+        b = 50 + x
+
+        for x in range(CELL_SIZE):
+            for y in range(CELL_SIZE):
+                self.color_array[y::CELL_SIZE, x::CELL_SIZE, 0] = r
+                self.color_array[y::CELL_SIZE, x::CELL_SIZE, 1] = g
+                self.color_array[y::CELL_SIZE, x::CELL_SIZE, 2] = b
 
         surfarray.blit_array(
             self.surface,
-            get_surfarray(self.grid_array)
+            self.color_array
         )
 
         return self.surface
 
     def sum(self):
         return sum(self.grid_array)
-
-
-def get_surfarray(array: np.ndarray[int, np.dtype[np.int32]]) -> np.ndarray[int, np.dtype[np.int32]]:
-    array = np.fmin(array//8, 255)
-    array = np.expand_dims(array, axis=2)
-    array = np.repeat(array, 3, axis=2)
-
-    array[::, ::, ::2] = (array[::, ::, ::2]*4) // 5
-    array[::, ::, 2] += 50
-    array[::, ::, 1] *= -1
-    array[::, ::, 1] += 120
-    array[::, ::, 1] = np.fmax(array[::, ::, 1], 0)
-
-    array = np.repeat(array, CELL_SIZE, 0)
-    array = np.repeat(array, CELL_SIZE, 1)
-    return array
 
 
 def decay(x: np.ndarray[int, np.dtype[np.int32]]) -> np.ndarray[int, np.dtype[np.int32]]:
