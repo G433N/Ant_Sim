@@ -1,0 +1,47 @@
+
+        for i, (position, velocity, acceleration, direction) in enumerate(zip(self.position, self.velocity, self.acceleration, self.direction)):
+
+            apply_movement_physics(position, velocity, acceleration, dt)
+
+            foods: list[tuple[float, int, Vector2]] = list()
+
+            if not bounds(position):
+                direction.xy = (WORLD_SIZE/2 - position).normalize()
+                self.state[i] = AntState.OutOfBounds
+            else:
+                if velocity.length_squared() != 0:
+                    foods = search_vision_cone(
+                        position, velocity.normalize(), self.food.position)
+
+            match self.state[i]:
+                case AntState.Wandering:
+
+                    if len(foods):
+                        self.state[i] = AntState.Searching
+
+                    self.wandering_timer[i] += dt
+                    time = self.wandering_timer[i]
+                    if time >= WANDER_DELAY:
+                        direction.xy = random_normal_vector()
+                        self.wandering_timer[i] = time % WANDER_DELAY
+
+                case AntState.OutOfBounds:
+                    if bounds(position):
+                        self.state[i] = AntState.Wandering
+
+                case AntState.Searching:
+                    if len(foods):
+                        foods.sort(key=lambda x: x[0])
+                        direction.xy = foods[0][2]
+                        if foods[0][0] < ANT_RADIUS:
+                            self.food.position.remove(foods[0][1])
+                    else:
+                        self.state[i] = AntState.Wandering
+
+            acceleration += direction * ANT_ACCELERATION
+
+            self.pheromone_timer[i] += dt
+            time = self.pheromone_timer[i]
+            if time >= PHEROMONE_DELAY:
+                self.pheromone_timer[i] = time % PHEROMONE_DELAY
+                self.spawn_pheromone(position.copy())

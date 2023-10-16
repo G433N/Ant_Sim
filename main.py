@@ -30,7 +30,7 @@ ants.food = food
 show_chunk = False
 n = 1
 TPS = 60
-FPS = 5
+FPS = 10
 draw_time: float = 1 / FPS
 while running:
     for event in pygame.event.get():

@@ -100,7 +100,7 @@ class ChunkedData[T]:
         gen = (chunk + v for b, v in zip(map, neighbourhood) if b)
         return self.enumerate_chunks(gen)
 
-    def get_neighbourhood(self, position: Vector2):
+    def get_neighborhood(self, position: Vector2):
         chunk = self.get_chunk_index(position)
         return self.enumerate_neighbourhood(chunk)
 
