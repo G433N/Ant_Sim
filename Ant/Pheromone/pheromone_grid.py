@@ -80,7 +80,7 @@ class Pheromone_Grid:
         array = surfarray.pixels3d(self.surface)
         a = np.fmin(self.grid_array//8, 255)
         b = (4*a)//5
-        r = b.copy()
+        r = b
         g = np.fmax(120-a, 0)
         b = 50 + b
         for x in range(CELL_SIZE):
