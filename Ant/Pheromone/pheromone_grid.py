@@ -79,11 +79,11 @@ class Pheromone_Grid:
         return f"\n{self.grid_array}\n"
 
     def draw(self, grid_size: tuple[int, int] = GRID_SIZE):
-        array = np.fmin(self.grid_array//8, 255)
-        x = (4*array)//5
-        r = x.copy()
-        g = np.fmax(120-array, 0)
-        b = 50 + x
+        a = np.fmin(self.grid_array//8, 255)
+        b = (4*a)//5
+        r = b.copy()
+        g = np.fmax(120-a, 0)
+        b = 50 + b
 
         for x in range(CELL_SIZE):
             for y in range(CELL_SIZE):
