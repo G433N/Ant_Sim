@@ -11,11 +11,11 @@ from Util.globals import WORLD_SIZE
 from Util.movement import apply_movement_physics
 from Util.util import bounds, random_normal_vector
 
-ANT_ACCELERATION: Final = 20
+ANT_ACCELERATION: Final = 20*5
 ANT_COLOR: Final = "black"
 ANT_RADIUS: Final = 3
 
-PHEROMONE_DELAY: Final = 0.2
+PHEROMONE_DELAY: Final = 5
 
 WANDER_DELAY: Final = 3
 
@@ -106,7 +106,7 @@ class SimpleAnts(Ant):
                     if len(foods):
                         foods.sort(key=lambda x: x[0])
                         direction.xy = foods[0][2]
-                        if foods[0][0] < ANT_RADIUS:
+                        if foods[0][0] < ANT_RADIUS*2:
                             self.food.position.remove(foods[0][1])
                     else:
                         self.state[i] = AntState.Wandering
@@ -117,7 +117,7 @@ class SimpleAnts(Ant):
                 acceleration += -v * ANT_ACCELERATION * \
                     (1 - v.dot(direction)) * 2/3
 
-            self.pheromone_timer[i] += dt
+            self.pheromone_timer[i] += velocity.length()
             time = self.pheromone_timer[i]
             if time >= PHEROMONE_DELAY:
                 self.pheromone_timer[i] = time % PHEROMONE_DELAY

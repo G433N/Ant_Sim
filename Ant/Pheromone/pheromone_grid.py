@@ -13,13 +13,13 @@ from Util.globals import SCREEN_SIZE
 
 COLORS = 50  # Must divide MAX_PER_TILE
 
-DIFFUSION_TIME: Final = 2
-DECAY_TIME: Final = 4
+DIFFUSION_TIME: Final = .2
+DECAY_TIME: Final = .4
 
 MAX_PER_TILE: Final = 2000
 
 
-CELL_SIZE: Final = 5
+CELL_SIZE: Final = 2
 
 GRID_SIZE: Final = (SCREEN_SIZE[0]//CELL_SIZE, SCREEN_SIZE[1]//CELL_SIZE)
 
@@ -30,7 +30,6 @@ class Pheromone_Grid:
     decay_timer: float
     len: int
     grid_array: np.ndarray[int, np.dtype[np.int32]]
-    color_array: np.ndarray[int, np.dtype[np.int32]]
     surface: Surface
 
     def __init__(self):
@@ -39,11 +38,6 @@ class Pheromone_Grid:
         self.len = prod(GRID_SIZE)
         self.surface = Surface(SCREEN_SIZE)
         self.grid_array = np.zeros(GRID_SIZE, np.int32)
-        array = np.expand_dims(self.grid_array, axis=2)
-        array = np.repeat(array, 3, axis=2)
-        array = np.repeat(array, CELL_SIZE, 0)
-        array = np.repeat(array, CELL_SIZE, 1)
-        self.color_array = array
 
     def update(self, dt: float):
         self.diffusion_timer += dt
@@ -60,7 +54,7 @@ class Pheromone_Grid:
 
     def add(self,
             position: Vector2,
-            strength: int = 80,
+            strength: int = 240,
             grid_size: tuple[int, int] = GRID_SIZE,
             cell_size: int = CELL_SIZE
             ):
@@ -75,7 +69,8 @@ class Pheromone_Grid:
         return f"\n{self.grid_array}\n"
 
     def draw(self, grid_size: tuple[int, int] = GRID_SIZE):
-        array: np.ndarray[int, np.dtype[np.int32]] = surfarray.pixels3d(self.surface) # type: ignore
+        array: np.ndarray[int, np.dtype[np.int32]] = surfarray.pixels3d(
+            self.surface)  # type: ignore
         a = np.fmin(self.grid_array//8, 255)
         c = (4*a)//5
         r = c
@@ -94,7 +89,7 @@ class Pheromone_Grid:
 
 def decay(x: np.ndarray[int, np.dtype[np.int32]]) -> np.ndarray[int, np.dtype[np.int32]]:
     y = 9
-    return (x-(x >> y)-np.fmin(x & ((1 << y)-1), 3))
+    return (x-((x >> y) << 5)-np.fmin(x & ((1 << y)-1), 2))
 
 
 def diffusion(arr: np.ndarray[int, np.dtype[np.int32]]):
@@ -116,4 +111,4 @@ def diffusion_stack(arr: np.ndarray[int, np.dtype[np.int32]]):
 
 
 def diffused_array(arr: np.ndarray[int, np.dtype[np.int32]]):
-    return arr + diffusion(arr//20)
+    return arr + diffusion(arr//40)

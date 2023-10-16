@@ -4,7 +4,7 @@ from pygame import Surface, Vector2, draw
 ANT_NEST_COLOR: Final = "brown"
 ANT_NEST_RADIUS: Final = 10
 
-ANT_NEST_MAX_SPAWN: Final = 1000
+ANT_NEST_MAX_SPAWN: Final = 300
 ANT_NEST_SPAWN_RATE: Final = 1
 
 type F = Callable[[Vector2], None]
