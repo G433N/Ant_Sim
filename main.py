@@ -29,6 +29,7 @@ food.add(3 * WORLD_SIZE/4, 20, 100)
 ants.food = food
 
 show_chunk = False
+show_fps = True
 n = 1
 TPS = 60
 FPS = 20
@@ -42,6 +43,8 @@ while running:
                 show_chunk = not show_chunk
             elif event.key == pygame.K_u:
                 draw_time = 1/FPS
+            elif event.key == pygame.K_f:
+                show_fps = not show_fps
 
     pheromones.update(dt)
     ants.update(dt)
@@ -55,11 +58,14 @@ while running:
         nests.draw(screen)
         food.draw(screen)
         ants.draw(screen)
-        fps = str(int(clock.get_fps()))
-        fps_t = font.render(fps, 1, pygame.Color("RED"))
+
         if show_chunk:
             ChunkedData.draw(screen)
-        screen.blit(fps_t, (0, 0))
+
+        if show_fps:
+            fps = str(int(clock.get_fps()))
+            fps_t = font.render(fps, 1, pygame.Color("RED"))
+            screen.blit(fps_t, (0, 0))
 
         pygame.display.flip()
         draw_time = draw_time % 1/FPS
@@ -68,8 +74,6 @@ while running:
     draw_time += dt
     if n == 10000:
         break
-        pass
-        # print(len(ants.position), clock.get_fps())
     n += 1
 
 pygame.quit()
