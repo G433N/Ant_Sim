@@ -16,8 +16,6 @@ COLORS = 50  # Must divide MAX_PER_TILE
 DIFFUSION_TIME: Final = 2
 DECAY_TIME: Final = 4
 
-DIFFUSION_EDGE: Final = 1
-DIFFUSION_MIDDLE: Final = 5
 MAX_PER_TILE: Final = 2000
 
 
@@ -77,7 +75,7 @@ class Pheromone_Grid:
         return f"\n{self.grid_array}\n"
 
     def draw(self, grid_size: tuple[int, int] = GRID_SIZE):
-        array = surfarray.pixels3d(self.surface)
+        array: np.ndarray[int, np.dtype[np.int32]] = surfarray.pixels3d(self.surface) # type: ignore
         a = np.fmin(self.grid_array//8, 255)
         c = (4*a)//5
         r = c
