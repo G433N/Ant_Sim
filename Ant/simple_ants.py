@@ -15,7 +15,7 @@ ANT_ACCELERATION: Final = 20
 ANT_COLOR: Final = "black"
 ANT_RADIUS: Final = 3
 
-PHEROMONE_DELAY: Final = 1
+PHEROMONE_DELAY: Final = 0.2
 
 WANDER_DELAY: Final = 3
 
