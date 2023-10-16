@@ -13,6 +13,7 @@ screen = pygame.display.set_mode(SCREEN_SIZE)
 clock = pygame.time.Clock()
 dt: float = 0
 running = True
+font = pygame.font.SysFont("Arial", 18, bold=True)
 
 mouse_position = pygame.Vector2()
 pheromones = Pheromone_Grid()
@@ -54,8 +55,11 @@ while running:
         nests.draw(screen)
         food.draw(screen)
         ants.draw(screen)
+        fps = str(int(clock.get_fps()))
+        fps_t = font.render(fps, 1, pygame.Color("RED"))
         if show_chunk:
             ChunkedData.draw(screen)
+        screen.blit(fps_t, (0, 0))
 
         pygame.display.flip()
         draw_time = draw_time % 1/FPS
