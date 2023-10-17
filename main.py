@@ -19,9 +19,7 @@ mouse_position = pygame.Vector2()
 pheromones = Pheromone_Grid()
 ants = SimpleAnts(pheromones.add)
 nests = AntNets(WORLD_SIZE, ants.add)
-# nests.add(Vector2(900, 300))
-for _ in range(500):
-    ants.add(WORLD_SIZE/2)
+nests.add(Vector2(900, 300))
 
 
 food = Food()
