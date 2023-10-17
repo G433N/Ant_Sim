@@ -1,3 +1,4 @@
+
 import pygame
 from Ant.Food.food import Food
 from Ant.Nest.ant_nests import AntNets
@@ -6,6 +7,7 @@ from Ant.simple_ants import SimpleAnts
 from Util.chunked_data import ChunkedData
 from Util.globals import SCREEN_SIZE, WORLD_SIZE
 from pygame import Vector2
+
 
 
 pygame.init()
@@ -20,6 +22,8 @@ pheromones = Pheromone_Grid()
 ants = SimpleAnts(pheromones.add)
 nests = AntNets(WORLD_SIZE, ants.add)
 nests.add(Vector2(900, 300))
+
+
 
 
 food = Food()

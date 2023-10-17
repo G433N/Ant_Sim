@@ -21,6 +21,17 @@ CELL_SIZE: Final = 2
 
 GRID_SIZE: Final = (SCREEN_SIZE[0]//CELL_SIZE, SCREEN_SIZE[1]//CELL_SIZE)
 
+CONSTANT_DECAY: Final = 7
+FAST_DECAY_THRESHOLD: Final = 9
+DECAY_SCALING_STRENGTH: Final = 5
+
+# higher values gives less amount diffused
+# lower strenght than 8 makes the diffusing cell to no longer keep the majority of its original value
+# lower than 4 gives negative values which is bad
+DIFFUSION_STRENGTH: Final = 40
+
+DEFAULT_PHEROMONE_STRENGTH: Final = MAX_PER_TILE//10
+
 
 @dataclass(slots=True)
 class Pheromone_Grid:
@@ -52,7 +63,7 @@ class Pheromone_Grid:
 
     def add(self,
             position: Vector2,
-            strength: int = 780,
+            strength: int = DEFAULT_PHEROMONE_STRENGTH,
             grid_size: tuple[int, int] = GRID_SIZE,
             cell_size: int = CELL_SIZE
             ):
@@ -85,14 +96,38 @@ class Pheromone_Grid:
         return sum(self.grid_array)
 
 
-def decay(x: np.ndarray[int, np.dtype[np.int32]]) -> np.ndarray[int, np.dtype[np.int32]]:
-    y = 9
-    return (x-((x >> y) << 5)-np.fmin(x & ((1 << y)-1), 7))
+def decay(
+    x: np.ndarray[int, np.dtype[np.int32]]
+) -> np.ndarray[int, np.dtype[np.int32]]:
+    """Element wise decay on numpy array"""
+    return (
+        # for each element in the given array returns the value of that element
+        #  subrtacted by a calculated decay amount
+        x
+
+        # bit shifting x by the scaling factor for a faster floor function
+        # then scaling up the result by the scaling strenght to make the result have more impact
+        # in short this part makes larger numbers decay faster
+        # the threshold creates a threshold for what size it works on
+        # the strength shifts the strength of the decay
+        - ((x >> FAST_DECAY_THRESHOLD) << DECAY_SCALING_STRENGTH) 
+        
+        # this part is for handling a more constant decay which then dissapears when the given elements value is 0
+        # using constant_decay for a constant decay
+        # unless the constant is larger than the value of the given element then decay by that value
+        - np.fmin(CONSTANT_DECAY,x)
+    )
 
 
 def diffusion(arr: np.ndarray[int, np.dtype[np.int32]]):
+    """
+    Takes in a 2D-array and treats each element as a cell in a 2D-grid.
+    It returns a new 2D-array where each cell has given its value to all neighbouring cells 
+    and also subtracted away how many copies of itself each cell has given to its neighbours
+    """
     vertical_arr = diffusion_stack(arr)
     horizon_arr = diffusion_stack(np.transpose(arr))
+
     return (
         vertical_arr[:-2]
         + vertical_arr[2:]
@@ -109,4 +144,8 @@ def diffusion_stack(arr: np.ndarray[int, np.dtype[np.int32]]):
 
 
 def diffused_array(arr: np.ndarray[int, np.dtype[np.int32]]):
-    return arr + diffusion(arr//40)
+    """
+    takes in a 2D-array and treats each element as a cell in a 2D-grid
+    It returns a new 2D-array where each cell has diffused into its neighbours
+    """
+    return arr + diffusion(arr//DIFFUSION_STRENGTH)
