@@ -68,7 +68,7 @@ class Pheromone_Grid:
 
     def draw(self):
         array = surfarray.pixels3d(self.surface)  # type: ignore
-        
+
         a = np.fmin(self.grid_array//COLOR_SCALING, 255)
         c = (4*a)//5
         r = c
@@ -87,7 +87,7 @@ class Pheromone_Grid:
 
 def decay(x: np.ndarray[int, np.dtype[np.int32]]) -> np.ndarray[int, np.dtype[np.int32]]:
     y = 9
-    return (x-((x >> y) << 5)-np.fmin(x & ((1 << y)-1), 2))
+    return (x-((x >> y) << 5)-np.fmin(x & ((1 << y)-1), 7))
 
 
 def diffusion(arr: np.ndarray[int, np.dtype[np.int32]]):

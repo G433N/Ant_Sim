@@ -8,7 +8,6 @@ from Util.globals import SCREEN_SIZE, WORLD_SIZE
 from pygame import Vector2
 
 
-
 pygame.init()
 screen = pygame.display.set_mode(SCREEN_SIZE)
 clock = pygame.time.Clock()
@@ -20,8 +19,9 @@ mouse_position = pygame.Vector2()
 pheromones = Pheromone_Grid()
 ants = SimpleAnts(pheromones.add)
 nests = AntNets(WORLD_SIZE, ants.add)
-# nests.add(Vector2(300, 500))
-nests.add(Vector2(900, 300))
+# nests.add(Vector2(900, 300))
+for _ in range(500):
+    ants.add(WORLD_SIZE/2)
 
 
 food = Food()
@@ -34,6 +34,7 @@ ants.food = food
 show_chunk = False
 show_fps = True
 show_pheromones = True
+show_ant = True
 n = 1
 TPS = 60
 FPS = 20
@@ -51,6 +52,8 @@ while running:
                 show_fps = not show_fps
             elif event.key == pygame.K_p:
                 show_pheromones = not show_pheromones
+            elif event.key == pygame.K_a:
+                show_ant = not show_ant
 
     pheromones.update(dt)
     ants.update(dt)
@@ -63,9 +66,10 @@ while running:
         else:
             screen.fill(pygame.Color(0, 120, 50))
 
-        nests.draw(screen)
-        food.draw(screen)
-        ants.draw(screen)
+        if show_ant:
+            nests.draw(screen)
+            food.draw(screen)
+            ants.draw(screen)
 
         if show_chunk:
             ChunkedData.draw(screen)
