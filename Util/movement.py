@@ -17,17 +17,14 @@ class Movement(Protocol):
 
 
 def apply_movement_physics(position: Vector2, velocity: Vector2, acceleration: Vector2, dt: float):
-    apply_friction(position, velocity)
     velocity += acceleration * dt
     position += velocity * dt
     acceleration *= 0
 
 
-def apply_friction(position: Vector2, velocity: Vector2):
-    if velocity.length_squared() < 1:
-        return
-
-    direction = velocity.normalize()
-    force = velocity.length_squared() * MY  # my:  friction cof
+def get_friction(direction: Vector2, speed_squared: float):
+    if not direction:
+        return Vector2()
+    force = speed_squared * MY  # my:  friction cof
     friction = -direction * force
-    velocity += friction
+    return friction
