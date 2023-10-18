@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from math import prod
-from typing import Final
+from typing import Any, Final
 
 try:
     import numpy as np
@@ -11,9 +11,9 @@ except ImportError:
 from pygame import Surface, Vector2
 from Util.globals import SCREEN_SIZE
 
-DIFFUSION_TIME: Final = .2
-DECAY_TIME: Final = .4
 
+###############################################################
+# Grid constants
 MAX_PER_TILE: Final = 8000
 COLOR_SCALING: Final = MAX_PER_TILE//256
 
@@ -21,17 +21,40 @@ CELL_SIZE: Final = 2
 
 GRID_SIZE: Final = (SCREEN_SIZE[0]//CELL_SIZE, SCREEN_SIZE[1]//CELL_SIZE)
 
+###############################################################
+
+###############################################################
+# decay and diffusion
+
+DIFFUSION_TIME: Final = .2
+DECAY_TIME: Final = .4
+
 CONSTANT_DECAY: Final = 7
 FAST_DECAY_THRESHOLD: Final = 9
 DECAY_SCALING_STRENGTH: Final = 5
 
-# higher values gives less amount diffused
-# lower strenght than 8 makes the diffusing cell to no longer keep the majority of its original value
-# lower than 4 gives negative values which is bad
+# Higher values gives less amount diffused.
+# Lower strenght than 8 makes the diffusing cell 
+# no longer keep the majority of its original value.
+# Lower than 4 gives negative values which is bad.
 DIFFUSION_STRENGTH: Final = 40
 
 DEFAULT_PHEROMONE_STRENGTH: Final = MAX_PER_TILE//10
 
+###############################################################
+
+
+###############################################################
+# Ant vision
+
+RADIUS = 10
+CELL_RADIUS: Final = RADIUS // CELL_SIZE
+ROOT_TWO: Final = np.sqrt(2)
+FOV: Final = 60
+ROTATION_LEFT: Final = Vector2(np.cos(FOV/2),np.sin(FOV/2))
+ROTATION_RIGHT: Final = Vector2(np.cos(FOV/2),-np.sin(FOV/2))
+
+###############################################################
 
 @dataclass(slots=True)
 class Pheromone_Grid:
@@ -149,3 +172,41 @@ def diffused_array(arr: np.ndarray[int, np.dtype[np.int32]]):
     It returns a new 2D-array where each cell has diffused into its neighbours
     """
     return arr + diffusion(arr//DIFFUSION_STRENGTH)
+
+
+
+def get_vision_field_offset(norm_dir: Vector2):
+    """hehe good luck understanding this shit :O"""
+    r = CELL_RADIUS//2
+    return (
+        np.fmin(
+
+            np.fmax(
+                # scales the normalised vector then element wise rounds to the nearest integer
+                np.rint(norm_dir * ROOT_TWO * r,
+                        out=np.empty(2, dtype=int),
+                        casting="unsafe"
+                        ),
+                -r
+            ),
+            r
+        )
+        # offset to get the index in the top left and not in the middle of the vision field
+        - (r, r)
+    )
+
+
+def sum_vision_field(vision_area: np.ndarray[int, np.dtype[Any]],grid_array: np.ndarray[int, np.dtype[Any]]) -> int:
+    return np.sum(
+        grid_array[
+            vision_area[1]:vision_area[1]+CELL_RADIUS,
+            vision_area[0]:vision_area[0]+CELL_RADIUS
+        ]
+    )
+
+
+def rotate_normal(norm_dir: Vector2,rotation_vector: Vector2):
+    return Vector2(
+        norm_dir.x * rotation_vector.x - norm_dir.y * rotation_vector.y,
+        norm_dir.y * rotation_vector.x + norm_dir.x * rotation_vector.y
+        )

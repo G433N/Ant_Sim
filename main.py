@@ -78,7 +78,7 @@ while running:
 
         if show_fps:
             fps = str(int(clock.get_fps()))
-            fps_t = font.render(fps, 1, "RED")
+            fps_t = font.render(fps, True, "RED")
             screen.blit(fps_t, (0, 0))
 
         pygame.display.flip()
