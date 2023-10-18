@@ -135,6 +135,14 @@ class Pheromone_Grid:
             grid_size: tuple[int, int] = GRID_SIZE,
             cell_size: int = CELL_SIZE
     ) -> Vector2:
+        """
+takes in a direction in the form of a normalised vector and
+a position vector 
+\n
+then based on the pheromones on the grid
+returns a new direction vector 
+\n       (hopefully)
+        """
 
         x = int(position.x/cell_size)
         y = int(position.y/cell_size)
