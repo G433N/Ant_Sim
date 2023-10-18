@@ -1,5 +1,7 @@
+
 from dataclasses import dataclass
-from math import prod
+from math import cos, prod, pi, sin
+import random
 from typing import Any, Final
 
 try:
@@ -34,7 +36,7 @@ FAST_DECAY_THRESHOLD: Final = 9
 DECAY_SCALING_STRENGTH: Final = 5
 
 # Higher values gives less amount diffused.
-# Lower strenght than 8 makes the diffusing cell 
+# Lower strenght than 8 makes the diffusing cell
 # no longer keep the majority of its original value.
 # Lower than 4 gives negative values which is bad.
 DIFFUSION_STRENGTH: Final = 40
@@ -50,11 +52,19 @@ DEFAULT_PHEROMONE_STRENGTH: Final = MAX_PER_TILE//10
 RADIUS = 10
 CELL_RADIUS: Final = RADIUS // CELL_SIZE
 ROOT_TWO: Final = np.sqrt(2)
-FOV: Final = 60
-ROTATION_LEFT: Final = Vector2(np.cos(FOV/2),np.sin(FOV/2))
-ROTATION_RIGHT: Final = Vector2(np.cos(FOV/2),-np.sin(FOV/2))
+FOV: Final = pi * 3
+
+ROTATION_LEFT_30: Final = Vector2(cos(FOV/2), sin(FOV/2))
+ROTATION_LEFT_15: Final = Vector2(cos(FOV/4), sin(FOV/4))
+ROTATION_RIGHT_30: Final = Vector2(cos(FOV/2), -sin(FOV/2))
+ROTATION_RIGHT_15: Final = Vector2(cos(FOV/4), -sin(FOV/4))
+
+# fucking names smh
+VALUE: Final = 5
+VALUE2: Final = 20
 
 ###############################################################
+
 
 @dataclass(slots=True)
 class Pheromone_Grid:
@@ -118,6 +128,94 @@ class Pheromone_Grid:
     def sum(self):
         return sum(self.grid_array)
 
+    def get_new_direction(
+            self,
+            direction: Vector2,
+            position: Vector2,
+            grid_size: tuple[int, int] = GRID_SIZE,
+            cell_size: int = CELL_SIZE
+    ) -> Vector2:
+
+        x = int(position.x/cell_size)
+        y = int(position.y/cell_size)
+        if (
+            CELL_RADIUS > x or
+            CELL_RADIUS > y or
+            grid_size[0]-CELL_RADIUS <= x or
+            grid_size[1]-CELL_RADIUS <= y
+        ):
+            return rotate_normal(direction, ROTATION_RIGHT_30)
+
+        left: Vector2 = \
+            rotate_normal(direction, ROTATION_LEFT_30)
+        right: Vector2 = \
+            rotate_normal(direction, ROTATION_RIGHT_30)
+
+        left_weight: np.int32 = \
+            self.get_pheromone_amount(left, (x, y))
+
+        forward_weight: np.int32 = (
+            self.get_pheromone_amount(direction, (x, y)) +
+            (MAX_PER_TILE*CELL_RADIUS**2)//VALUE2
+        )
+
+        right_weight: np.int32 = \
+            self.get_pheromone_amount(right, (x, y))
+
+
+        directions_weights: tuple[np.int32, ...] = (
+            left_weight, 
+            (left_weight+forward_weight)//VALUE, 
+            forward_weight, 
+            (right_weight+forward_weight)//VALUE, 
+            right_weight
+            )
+        
+        picked_direction = choose_value(int(np.sum(directions_weights)))
+
+        i = 0
+        for j in directions_weights:
+            if picked_direction <= j:
+                break
+            i += 1
+
+        match i:
+            case 0:
+                return left
+            case 1:
+                return rotate_normal(direction, ROTATION_LEFT_15)
+            case 2:
+                return direction
+            case 3:
+                return rotate_normal(direction, ROTATION_RIGHT_15)
+            case 4:
+                return right
+            case _:
+                raise ValueError("something wrong with that loop or choosen direction")
+        
+
+
+    def sum_vision_field(self, first_index: np.ndarray[int, np.dtype[Any]], size: int = CELL_RADIUS) -> np.int32:
+        """returns the sum of pheromones in a given area"""
+        return np.sum(
+            self.grid_array[
+                first_index[1]:first_index[1]+size,
+                first_index[0]:first_index[0]+size
+            ]
+        )
+
+    def get_pheromone_amount(self, direction: Vector2, pos: tuple[int, int]):
+        """returns the sum of pheromones in a given direction"""
+        return \
+            self.sum_vision_field(
+                get_vision_field_offset(direction)+pos
+            )
+
+
+def choose_value(end:int,start:int = 0):
+    return random.randrange(start,end+1)
+
+
 
 def decay(
     x: np.ndarray[int, np.dtype[np.int32]]
@@ -133,12 +231,14 @@ def decay(
         # in short this part makes larger numbers decay faster
         # the threshold creates a threshold for what size it works on
         # the strength shifts the strength of the decay
-        - ((x >> FAST_DECAY_THRESHOLD) << DECAY_SCALING_STRENGTH) 
-        
-        # this part is for handling a more constant decay which then dissapears when the given elements value is 0
+        - ((x >> FAST_DECAY_THRESHOLD) << DECAY_SCALING_STRENGTH)
+
+        # this part is for handling a more constant decay
+        # which then dissapears when the given elements value is 0
+
         # using constant_decay for a constant decay
         # unless the constant is larger than the value of the given element then decay by that value
-        - np.fmin(CONSTANT_DECAY,x)
+        - np.fmin(CONSTANT_DECAY, x)
     )
 
 
@@ -174,7 +274,6 @@ def diffused_array(arr: np.ndarray[int, np.dtype[np.int32]]):
     return arr + diffusion(arr//DIFFUSION_STRENGTH)
 
 
-
 def get_vision_field_offset(norm_dir: Vector2):
     """hehe good luck understanding this shit :O"""
     r = CELL_RADIUS//2
@@ -182,7 +281,8 @@ def get_vision_field_offset(norm_dir: Vector2):
         np.fmin(
 
             np.fmax(
-                # scales the normalised vector then element wise rounds to the nearest integer
+                # scales the normalised vector
+                #  then element wise rounds to the nearest integer
                 np.rint(norm_dir * ROOT_TWO * r,
                         out=np.empty(2, dtype=int),
                         casting="unsafe"
@@ -196,17 +296,9 @@ def get_vision_field_offset(norm_dir: Vector2):
     )
 
 
-def sum_vision_field(vision_area: np.ndarray[int, np.dtype[Any]],grid_array: np.ndarray[int, np.dtype[Any]]) -> int:
-    return np.sum(
-        grid_array[
-            vision_area[1]:vision_area[1]+CELL_RADIUS,
-            vision_area[0]:vision_area[0]+CELL_RADIUS
-        ]
-    )
-
-
-def rotate_normal(norm_dir: Vector2,rotation_vector: Vector2):
+def rotate_normal(norm_dir: Vector2, rotation_vector: Vector2):
+    """rotates the first vector by the second (both needs to be normalised)"""
     return Vector2(
         norm_dir.x * rotation_vector.x - norm_dir.y * rotation_vector.y,
         norm_dir.y * rotation_vector.x + norm_dir.x * rotation_vector.y
-        )
+    )
