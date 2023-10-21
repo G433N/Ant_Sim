@@ -19,7 +19,7 @@ from Util.globals import SCREEN_SIZE
 MAX_PER_TILE: Final = 8000
 COLOR_SCALING: Final = MAX_PER_TILE//256
 
-CELL_SIZE: Final = 5
+CELL_SIZE: Final = 2
 
 GRID_SIZE: Final = (SCREEN_SIZE[0]//CELL_SIZE, SCREEN_SIZE[1]//CELL_SIZE)
 
@@ -28,7 +28,7 @@ GRID_SIZE: Final = (SCREEN_SIZE[0]//CELL_SIZE, SCREEN_SIZE[1]//CELL_SIZE)
 ###############################################################
 # decay and diffusion
 
-DIFFUSION_TIME: Final = .05
+DIFFUSION_TIME: Final = .2
 DECAY_TIME: Final = .4
 
 CONSTANT_DECAY: Final = 7
@@ -39,9 +39,9 @@ DECAY_SCALING_STRENGTH: Final = 5
 # Lower strenght than 8 makes the diffusing cell
 # no longer keep the majority of its original value.
 # Lower than 4 gives negative values which is bad.
-DIFFUSION_STRENGTH: Final = 9
+DIFFUSION_STRENGTH: Final = 30
 
-DEFAULT_PHEROMONE_STRENGTH: Final = MAX_PER_TILE//2
+DEFAULT_PHEROMONE_STRENGTH: Final = (MAX_PER_TILE//(CELL_SIZE**2))//2
 
 ###############################################################
 
@@ -59,9 +59,11 @@ ROTATION_LEFT_15: Final = Vector2(cos(FOV/4), sin(FOV/4))
 ROTATION_RIGHT_30: Final = Vector2(cos(FOV/2), -sin(FOV/2))
 ROTATION_RIGHT_15: Final = Vector2(cos(FOV/4), -sin(FOV/4))
 
-# fucking names smh
-VALUE: Final = 5
-VALUE2: Final = 20
+# higher value gives a smaler weight for the two inbetween directions
+INBETWEEN_DIRECTION_WEIGTH_SCALING: Final = 5
+
+# higher value gives a smaler base weight for the forward direction
+FORWARD_BASE_WEIGTH_SCALING: Final = 20
 
 ###############################################################
 
@@ -161,7 +163,7 @@ class Pheromone_Grid:
 
         forward_weight: np.int32 = (
             self.get_pheromone_amount(direction, (x, y)) +
-            (MAX_PER_TILE*CELL_RADIUS**2)//VALUE2
+            (MAX_PER_TILE*CELL_RADIUS**2)//FORWARD_BASE_WEIGTH_SCALING
         )
 
         right_weight: np.int32 = \
@@ -170,9 +172,9 @@ class Pheromone_Grid:
 
         directions_weights: tuple[np.int32, ...] = (
             left_weight, 
-            (left_weight+forward_weight)//VALUE, 
+            (left_weight+forward_weight)//INBETWEEN_DIRECTION_WEIGTH_SCALING, 
             forward_weight, 
-            (right_weight+forward_weight)//VALUE, 
+            (right_weight+forward_weight)//INBETWEEN_DIRECTION_WEIGTH_SCALING, 
             right_weight
             )
         
