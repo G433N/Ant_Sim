@@ -2,6 +2,7 @@
 
 from typing import Final
 from pygame import Surface, Vector2, draw
+from Ant.Pheromone.add_pheromone import add_pheromone
 
 from Util.chunked_data import ChunkedData
 from Util.globals import WORLD_SIZE
@@ -17,13 +18,17 @@ never mind u can max eat one food per ant per frame
 and an ant check every possibale food before the next ant does the same
 """
 FOOD_SIZE: Final = 4
-
+PHEROMONE_DROP_TIMER: Final = 0.4
 
 class Food:
     position: ChunkedData[Vector2]
+    spawn_pheromone: add_pheromone
+    timer: float
 
-    def __init__(self) -> None:
+    def __init__(self, spawn_pheromone: add_pheromone) -> None:
         self.position = ChunkedData(WORLD_SIZE)
+        self.spawn_pheromone = spawn_pheromone
+        self.timer = 0
 
     def add(self, position: Vector2, amount: int, radius: float):
         for _ in range(amount):
@@ -33,3 +38,12 @@ class Food:
     def draw(self, surface: Surface):
         for position in self.position.get_data():
             draw.circle(surface, "yellow", position, FOOD_SIZE)
+
+    def update(self ,dt: float):
+        self.timer += dt
+        if self.timer >= PHEROMONE_DROP_TIMER:
+            self.timer %= PHEROMONE_DROP_TIMER
+            for position in self.position.get_data():
+                self.spawn_pheromone(position.copy())
+
+

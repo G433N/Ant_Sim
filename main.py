@@ -19,14 +19,12 @@ font = pygame.font.SysFont("Arial", 18, bold=True)
 
 mouse_position = pygame.Vector2()
 pheromones = Pheromone_Grid()
-ants = SimpleAnts(pheromones.add)
+ants = SimpleAnts(pheromones.add,pheromones.get_new_direction)
 nests = AntNets(WORLD_SIZE, ants.add)
 nests.add(Vector2(900, 300))
 
 
-
-
-food = Food()
+food = Food(pheromones.add)
 food.add(WORLD_SIZE/4, 20, 100)
 food.add(Vector2(100, 500), 20, 100)
 food.add(WORLD_SIZE/4 + Vector2(700, 0), 20, 100)
@@ -60,6 +58,7 @@ while running:
     pheromones.update(dt)
     ants.update(dt)
     nests.update(dt)
+    food.update(dt)
 
     if draw_time >= 1/FPS:
 

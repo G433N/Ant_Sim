@@ -4,6 +4,7 @@ from random import random
 from typing import Final
 from pygame import Surface, Vector2, draw
 from Ant.Food.food import Food
+from Ant.Pheromone.choose_direction import choose_direction
 from Ant.Pheromone.add_pheromone import add_pheromone
 from Ant.ant import Ant
 from Util.chunked_data import ChunkedData
@@ -17,7 +18,7 @@ ANT_RADIUS: Final = 3
 
 PHEROMONE_DROP_DISTANCE: Final = 5
 
-WANDER_DELAY: Final = 3
+WANDER_DELAY: Final = 0.2
 
 TARGET_COLOR: Final = "blue"
 TARGET_RADIUS: Final = 2
@@ -50,8 +51,9 @@ class SimpleAnts(Ant):
     state: list[AntState]
     spawn_pheromone: add_pheromone
     food: Food
+    wander_direction : choose_direction
 
-    def __init__(self, spawn_pheromone: add_pheromone) -> None:
+    def __init__(self, spawn_pheromone: add_pheromone, wander_direction: choose_direction) -> None:
         self.position = list()
         self.velocity = list()
         self.acceleration = list()
@@ -60,6 +62,7 @@ class SimpleAnts(Ant):
         self.wandering_timer = list()
         self.state = list()
         self.spawn_pheromone = spawn_pheromone
+        self.wander_direction = wander_direction
 
     def add(self, position: Vector2):
         self.position.append(position)
@@ -103,7 +106,7 @@ class SimpleAnts(Ant):
                     distance = self.wandering_timer[i]
 
                     if distance >= WANDER_DELAY:
-                        goal_direction.xy = random_normal_vector()
+                        goal_direction.xy = self.wander_direction(goal_direction.xy,position)
                         self.wandering_timer[i] = distance % WANDER_DELAY
 
                 case AntState.OutOfBounds:

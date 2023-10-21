@@ -19,7 +19,7 @@ from Util.globals import SCREEN_SIZE
 MAX_PER_TILE: Final = 8000
 COLOR_SCALING: Final = MAX_PER_TILE//256
 
-CELL_SIZE: Final = 2
+CELL_SIZE: Final = 5
 
 GRID_SIZE: Final = (SCREEN_SIZE[0]//CELL_SIZE, SCREEN_SIZE[1]//CELL_SIZE)
 
@@ -28,7 +28,7 @@ GRID_SIZE: Final = (SCREEN_SIZE[0]//CELL_SIZE, SCREEN_SIZE[1]//CELL_SIZE)
 ###############################################################
 # decay and diffusion
 
-DIFFUSION_TIME: Final = .2
+DIFFUSION_TIME: Final = .05
 DECAY_TIME: Final = .4
 
 CONSTANT_DECAY: Final = 7
@@ -39,9 +39,9 @@ DECAY_SCALING_STRENGTH: Final = 5
 # Lower strenght than 8 makes the diffusing cell
 # no longer keep the majority of its original value.
 # Lower than 4 gives negative values which is bad.
-DIFFUSION_STRENGTH: Final = 40
+DIFFUSION_STRENGTH: Final = 9
 
-DEFAULT_PHEROMONE_STRENGTH: Final = MAX_PER_TILE//10
+DEFAULT_PHEROMONE_STRENGTH: Final = MAX_PER_TILE//2
 
 ###############################################################
 
@@ -136,12 +136,10 @@ class Pheromone_Grid:
             cell_size: int = CELL_SIZE
     ) -> Vector2:
         """
-takes in a direction in the form of a normalised vector and
-a position vector 
-\n
-then based on the pheromones on the grid
-returns a new direction vector 
-\n       (hopefully)
+        takes in a direction in the form of a normalised vector and
+        a position vector,
+        then based on the pheromones on the grid
+        returns a new direction vector 
         """
 
         x = int(position.x/cell_size)
@@ -152,8 +150,7 @@ returns a new direction vector
             grid_size[0]-CELL_RADIUS <= x or
             grid_size[1]-CELL_RADIUS <= y
         ):
-            return rotate_normal(direction, ROTATION_RIGHT_30)
-
+            return direction
         left: Vector2 = \
             rotate_normal(direction, ROTATION_LEFT_30)
         right: Vector2 = \
@@ -185,6 +182,7 @@ returns a new direction vector
         for j in directions_weights:
             if picked_direction <= j:
                 break
+            picked_direction -= j
             i += 1
 
         match i:
@@ -282,25 +280,28 @@ def diffused_array(arr: np.ndarray[int, np.dtype[np.int32]]):
     return arr + diffusion(arr//DIFFUSION_STRENGTH)
 
 
-def get_vision_field_offset(norm_dir: Vector2):
-    """hehe good luck understanding this shit :O"""
-    r = CELL_RADIUS//2
+def get_vision_field_offset(norm_dir: Vector2,half_size: int = CELL_RADIUS//2):
+    """
+    Takes in a normalised vector as direction and opptionally a size 
+    then returns the top left index of a square which the direction vector is pointing at.
+    The square is adjacent to the origin (0,0) and has a side lenght equal to the size
+    """
     return (
         np.fmin(
 
             np.fmax(
                 # scales the normalised vector
                 #  then element wise rounds to the nearest integer
-                np.rint(norm_dir * ROOT_TWO * r,
+                np.rint(norm_dir * ROOT_TWO * half_size,
                         out=np.empty(2, dtype=int),
                         casting="unsafe"
                         ),
-                -r
+                -half_size
             ),
-            r
+            half_size
         )
         # offset to get the index in the top left and not in the middle of the vision field
-        - (r, r)
+        - (half_size, half_size)
     )
 
 
