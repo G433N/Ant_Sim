@@ -88,11 +88,11 @@ class Pheromone_Grid:
         self.decay_timer += dt
 
         if self.decay_timer >= DECAY_TIME:
-            self.decay_timer = self.decay_timer % DECAY_TIME
+            self.decay_timer %= DECAY_TIME
             self.grid_array = decay(self.grid_array)
 
         if self.diffusion_timer >= DIFFUSION_TIME:
-            self.diffusion_timer = self.diffusion_timer % DIFFUSION_TIME
+            self.diffusion_timer %= DIFFUSION_TIME
             self.grid_array = np.fmin(
                 diffused_array(self.grid_array), MAX_PER_TILE)
 
@@ -271,6 +271,11 @@ def diffusion(arr: np.ndarray[int, np.dtype[np.int32]]):
 
 
 def diffusion_stack(arr: np.ndarray[int, np.dtype[np.int32]]):
+    """
+    takes in an array and returns a copy of that array but
+    with a second copy of the first row on top 
+    and a second copy of the bottom row at the bottom
+    """
     return np.vstack((arr[0], arr, arr[-1]))
 
 

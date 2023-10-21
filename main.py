@@ -81,7 +81,7 @@ while running:
             screen.blit(fps_t, (0, 0))
 
         pygame.display.flip()
-        draw_time = draw_time % 1/FPS
+        draw_time %= 1/FPS
 
     dt = clock.tick(TPS) / 1000  # limits FPS to 60
     draw_time += dt

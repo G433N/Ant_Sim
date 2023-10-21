@@ -18,7 +18,7 @@ ANT_RADIUS: Final = 3
 
 PHEROMONE_DROP_DISTANCE: Final = 5
 
-WANDER_DELAY: Final = 0.1
+WANDER_DELAY: Final = 0.5
 
 TARGET_COLOR: Final = "blue"
 TARGET_RADIUS: Final = 2

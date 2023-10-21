@@ -18,7 +18,7 @@ never mind u can max eat one food per ant per frame
 and an ant check every possibale food before the next ant does the same
 """
 FOOD_SIZE: Final = 4
-PHEROMONE_DROP_TIMER: Final = 0.4
+PHEROMONE_DROP_TIMER: Final = 0.01
 
 class Food:
     position: ChunkedData[Vector2]
