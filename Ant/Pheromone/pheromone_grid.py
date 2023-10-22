@@ -36,7 +36,7 @@ FAST_DECAY_THRESHOLD: Final = 9
 DECAY_SCALING_STRENGTH: Final = 5
 
 # Higher values gives less amount diffused.
-# Lower strenght than 8 makes the diffusing cell
+# Lower strength than 8 makes the diffusing cell
 # no longer keep the majority of its original value.
 # Lower than 4 gives negative values which is bad.
 DIFFUSION_STRENGTH: Final = 30
@@ -59,11 +59,11 @@ ROTATION_LEFT_15: Final = Vector2(cos(FOV/4), sin(FOV/4))
 ROTATION_RIGHT_30: Final = Vector2(cos(FOV/2), -sin(FOV/2))
 ROTATION_RIGHT_15: Final = Vector2(cos(FOV/4), -sin(FOV/4))
 
-# higher value gives a smaler weight for the two inbetween directions
-INBETWEEN_DIRECTION_WEIGTH_SCALING: Final = 5
+# higher value gives a smaller weight for the two between directions
+IN_BETWEEN_DIRECTION_WEIGHT_SCALING: Final = 5
 
-# higher value gives a smaler base weight for the forward direction
-FORWARD_BASE_WEIGTH_SCALING: Final = 20
+# higher value gives a smaller base weight for the forward direction
+FORWARD_BASE_WEIGHT_SCALING: Final = 20
 
 ###############################################################
 
@@ -163,21 +163,20 @@ class Pheromone_Grid:
 
         forward_weight: np.int32 = (
             self.get_pheromone_amount(direction, (x, y)) +
-            (MAX_PER_TILE*CELL_RADIUS**2)//FORWARD_BASE_WEIGTH_SCALING
+            (MAX_PER_TILE*CELL_RADIUS**2)//FORWARD_BASE_WEIGHT_SCALING
         )
 
         right_weight: np.int32 = \
             self.get_pheromone_amount(right, (x, y))
 
-
         directions_weights: tuple[np.int32, ...] = (
-            left_weight, 
-            (left_weight+forward_weight)//INBETWEEN_DIRECTION_WEIGTH_SCALING, 
-            forward_weight, 
-            (right_weight+forward_weight)//INBETWEEN_DIRECTION_WEIGTH_SCALING, 
+            left_weight,
+            (left_weight+forward_weight)//IN_BETWEEN_DIRECTION_WEIGHT_SCALING,
+            forward_weight,
+            (right_weight+forward_weight)//IN_BETWEEN_DIRECTION_WEIGHT_SCALING,
             right_weight
-            )
-        
+        )
+
         picked_direction = choose_value(int(np.sum(directions_weights)))
 
         i = 0
@@ -199,9 +198,8 @@ class Pheromone_Grid:
             case 4:
                 return right
             case _:
-                raise ValueError("something wrong with that loop or choosen direction")
-        
-
+                raise ValueError(
+                    "something wrong with that loop or chosen direction")
 
     def sum_vision_field(self, first_index: np.ndarray[int, np.dtype[Any]], size: int = CELL_RADIUS) -> np.int32:
         """returns the sum of pheromones in a given area"""
@@ -220,9 +218,8 @@ class Pheromone_Grid:
             )
 
 
-def choose_value(end:int,start:int = 0):
-    return random.randrange(start,end+1)
-
+def choose_value(end: int, start: int = 0):
+    return random.randrange(start, end+1)
 
 
 def decay(
@@ -231,18 +228,18 @@ def decay(
     """Element wise decay on numpy array"""
     return (
         # for each element in the given array returns the value of that element
-        #  subrtacted by a calculated decay amount
+        #  subtracted by a calculated decay amount
         x
 
         # bit shifting x by the scaling factor for a faster floor function
-        # then scaling up the result by the scaling strenght to make the result have more impact
+        # then scaling up the result by the scaling strength to make the result have more impact
         # in short this part makes larger numbers decay faster
         # the threshold creates a threshold for what size it works on
         # the strength shifts the strength of the decay
         - ((x >> FAST_DECAY_THRESHOLD) << DECAY_SCALING_STRENGTH)
 
         # this part is for handling a more constant decay
-        # which then dissapears when the given elements value is 0
+        # which then disappears when the given elements value is 0
 
         # using constant_decay for a constant decay
         # unless the constant is larger than the value of the given element then decay by that value
@@ -253,8 +250,8 @@ def decay(
 def diffusion(arr: np.ndarray[int, np.dtype[np.int32]]):
     """
     Takes in a 2D-array and treats each element as a cell in a 2D-grid.
-    It returns a new 2D-array where each cell has given its value to all neighbouring cells 
-    and also subtracted away how many copies of itself each cell has given to its neighbours
+    It returns a new 2D-array where each cell has given its value to all neighboring cells 
+    and also subtracted away how many copies of itself each cell has given to its neighbors
     """
     vertical_arr = diffusion_stack(arr)
     horizon_arr = diffusion_stack(np.transpose(arr))
@@ -282,22 +279,22 @@ def diffusion_stack(arr: np.ndarray[int, np.dtype[np.int32]]):
 def diffused_array(arr: np.ndarray[int, np.dtype[np.int32]]):
     """
     takes in a 2D-array and treats each element as a cell in a 2D-grid
-    It returns a new 2D-array where each cell has diffused into its neighbours
+    It returns a new 2D-array where each cell has diffused into its neighbors
     """
     return arr + diffusion(arr//DIFFUSION_STRENGTH)
 
 
-def get_vision_field_offset(norm_dir: Vector2,half_size: int = CELL_RADIUS//2):
+def get_vision_field_offset(norm_dir: Vector2, half_size: int = CELL_RADIUS//2):
     """
-    Takes in a normalised vector as direction and opptionally a size 
+    Takes in a normalized vector as direction and optionally a size 
     then returns the top left index of a square which the direction vector is pointing at.
-    The square is adjacent to the origin (0,0) and has a side lenght equal to the size
+    The square is adjacent to the origin (0,0) and has a side length equal to the size
     """
     return (
         np.fmin(
 
             np.fmax(
-                # scales the normalised vector
+                # scales the normalized vector
                 #  then element wise rounds to the nearest integer
                 np.rint(norm_dir * ROOT_TWO * half_size,
                         out=np.empty(2, dtype=int),
@@ -313,7 +310,7 @@ def get_vision_field_offset(norm_dir: Vector2,half_size: int = CELL_RADIUS//2):
 
 
 def rotate_normal(norm_dir: Vector2, rotation_vector: Vector2):
-    """rotates the first vector by the second (both needs to be normalised)"""
+    """rotates the first vector by the second (both needs to be normalized)"""
     return Vector2(
         norm_dir.x * rotation_vector.x - norm_dir.y * rotation_vector.y,
         norm_dir.y * rotation_vector.x + norm_dir.x * rotation_vector.y
