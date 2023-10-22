@@ -16,7 +16,6 @@ dt: float = 0
 running = True
 font = pygame.font.SysFont("Arial", 18, bold=True)
 
-mouse_position = pygame.Vector2()
 # TODO : Make this an tuple, with we loop over every frame
 pheromones = Pheromone_Grid()
 ants = SimpleAnts(pheromones.add, pheromones.get_new_direction)
