@@ -25,20 +25,28 @@ TARGET_RADIUS: Final = 2
 
 VISION_RANGE: Final = 10
 
-"""
-TODO
-Random ant movement offset
-Search for food
-Return home with food
-Switch pheromone type and internal state
-follow pheromone
-"""
-
 
 class AntState(Enum):
     Searching = auto(),
     Wandering = auto(),
     OutOfBounds = auto(),
+    # TODO : ReturnHome
+    # TODO : ReturnHomeWithFood (drop food pheromone)
+
+
+""" State machine
+On start -> Wandering
+Any -> OutOfBounds
+OutOfBounds -> Wandering
+Wandering -> (Searching OR ReturnHome)
+Searching -> (ReturnHomeWithFood or Wandering)
+ReturnHome -> (Searching or Wandering)
+ReturnHomeWithFood -> Wandering
+"""
+
+
+class Add_Pheromone_Class:
+    pass
 
 
 class SimpleAnts(Ant):
@@ -49,9 +57,11 @@ class SimpleAnts(Ant):
     pheromone_distance: list[float]
     wandering_timer: list[float]
     state: list[AntState]
-    spawn_pheromone: add_pheromone
+
+    # TODO : This need to be a class instead with multiple named add_pheromone function, for multiple pheromones support
+    spawn_pheromone: add_pheromone  # Name Add_Pheromones_Class or something better
     food: Food
-    wander_direction : choose_direction
+    wander_direction: choose_direction
 
     def __init__(self, spawn_pheromone: add_pheromone, wander_direction: choose_direction) -> None:
         self.position = list()
@@ -96,7 +106,7 @@ class SimpleAnts(Ant):
                     foods = search_vision_cone(
                         position, direction, self.food.position)
 
-            match self.state[i]:
+            match self.state[i]:  # TODO : Add new behavior to new states
                 case AntState.Wandering:
 
                     if len(foods):
@@ -105,15 +115,16 @@ class SimpleAnts(Ant):
                     self.wandering_timer[i] += dt
                     distance = self.wandering_timer[i]
 
-                    if distance >= WANDER_DELAY:
-                        goal_direction.xy = self.wander_direction(goal_direction.xy,position)
+                    if distance >= WANDER_DELAY:  # TODO : Make random ant movement sexier
+                        goal_direction.xy = self.wander_direction(
+                            goal_direction.xy, position)
                         self.wandering_timer[i] = distance % WANDER_DELAY
 
                 case AntState.OutOfBounds:
                     if bound:
                         self.state[i] = AntState.Wandering
 
-                case AntState.Searching:
+                case AntState.Searching:  # TODO : Add a timer for returning home without food
                     if len(foods):
                         foods.sort(key=lambda x: x[0])
                         goal_direction.xy = foods[0][2]
@@ -133,6 +144,8 @@ class SimpleAnts(Ant):
 
             if distance >= PHEROMONE_DROP_DISTANCE:
                 self.pheromone_distance[i] = distance % PHEROMONE_DROP_DISTANCE
+                # TODO : Switch function in Add_Pheromones_Class depending on state
+                # TODO : We can add support for different timers and behaviors per pheromone later
                 self.spawn_pheromone(position.copy())
 
     def draw(self, screen: Surface):

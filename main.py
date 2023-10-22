@@ -9,7 +9,6 @@ from Util.globals import SCREEN_SIZE, WORLD_SIZE
 from pygame import Vector2
 
 
-
 pygame.init()
 screen = pygame.display.set_mode(SCREEN_SIZE)
 clock = pygame.time.Clock()
@@ -18,8 +17,9 @@ running = True
 font = pygame.font.SysFont("Arial", 18, bold=True)
 
 mouse_position = pygame.Vector2()
+# TODO : Make this an tuple, with we loop over every frame
 pheromones = Pheromone_Grid()
-ants = SimpleAnts(pheromones.add,pheromones.get_new_direction)
+ants = SimpleAnts(pheromones.add, pheromones.get_new_direction)
 nests = AntNets(WORLD_SIZE, ants.add)
 nests.add(Vector2(900, 300))
 
@@ -63,6 +63,7 @@ while running:
     if draw_time >= 1/FPS:
 
         if show_pheromones:
+            # NOTE : if you dont wanna make color blending u can just make some keybinds to switch witch pheromone is drawn (1-9)
             screen.blit(pheromones.draw(), (0, 0))
         else:
             screen.fill(pygame.Color(0, 120, 50))

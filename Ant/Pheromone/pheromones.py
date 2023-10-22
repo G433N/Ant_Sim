@@ -9,6 +9,7 @@ MINIMUM_STRENGTH: Final = 4
 MAXIMUM_STRENGTH: Final = 8
 
 PHEROMONE_COLOR = "purple"
+# TODO : Remove this file
 
 
 class Pheromones:

@@ -10,19 +10,20 @@ from Util.util import random_vector_disc
 
 """
 Note to future me
-Probably useless to check if food is eaten before pathing to it
+Probably useless to check if food is eaten before patting to it
 because the chance that to 2 or more ants eat the same food the same frame
 is very very low
 
 never mind u can max eat one food per ant per frame 
-and an ant check every possibale food before the next ant does the same
+and an ant check every possible food before the next ant does the same
 """
 FOOD_SIZE: Final = 4
 PHEROMONE_DROP_TIMER: Final = 0.01
 
+
 class Food:
     position: ChunkedData[Vector2]
-    spawn_pheromone: add_pheromone
+    spawn_pheromone: add_pheromone  # TODO : Why this???
     timer: float
 
     def __init__(self, spawn_pheromone: add_pheromone) -> None:
@@ -39,11 +40,9 @@ class Food:
         for position in self.position.get_data():
             draw.circle(surface, "yellow", position, FOOD_SIZE)
 
-    def update(self ,dt: float):
+    def update(self, dt: float):
         self.timer += dt
         if self.timer >= PHEROMONE_DROP_TIMER:
             self.timer %= PHEROMONE_DROP_TIMER
             for position in self.position.get_data():
                 self.spawn_pheromone(position.copy())
-
-

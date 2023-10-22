@@ -75,6 +75,7 @@ class Pheromone_Grid:
     len: int
     grid_array: np.ndarray[int, np.dtype[np.int32]]
     surface: Surface
+    # TODO : Add color map function and add as functions so that we can have diffrent for difrrent peheromones
 
     def __init__(self):
         self.diffusion_timer = 0
@@ -113,6 +114,8 @@ class Pheromone_Grid:
         return f"\n{self.grid_array}\n"
 
     def draw(self):
+        # TODO : Change this to take in surfarray (Numpy Array) and return one so we can blend multiple together
+        # TODO : All of them need to start on the same color if we want different colors
         array = surfarray.pixels3d(self.surface)  # type: ignore
 
         a = np.fmin(self.grid_array//COLOR_SCALING, 255)
@@ -138,7 +141,7 @@ class Pheromone_Grid:
             cell_size: int = CELL_SIZE
     ) -> Vector2:
         """
-        takes in a direction in the form of a normalised vector and
+        takes in a direction in the form of a normalized vector and
         a position vector,
         then based on the pheromones on the grid
         returns a new direction vector 
