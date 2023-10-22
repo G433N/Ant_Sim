@@ -75,7 +75,7 @@ class Pheromone_Grid:
     len: int
     grid_array: np.ndarray[int, np.dtype[np.int32]]
     surface: Surface
-    # TODO : Add color map function and add as functions so that we can have diffrent for difrrent peheromones
+    # TODO : Add color map function and add as functions so that we can have different for deferent pheromones
 
     def __init__(self):
         self.diffusion_timer = 0
