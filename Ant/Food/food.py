@@ -10,7 +10,7 @@ from Util.util import random_vector_disc
 
 """
 Note to future me
-Probably useless to check if food is eaten before patting to it
+Probably useless to check if food is eaten before pathing to it
 because the chance that to 2 or more ants eat the same food the same frame
 is very very low
 

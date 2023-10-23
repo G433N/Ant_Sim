@@ -59,7 +59,7 @@ ROTATION_LEFT_15: Final = Vector2(cos(FOV/4), sin(FOV/4))
 ROTATION_RIGHT_30: Final = Vector2(cos(FOV/2), -sin(FOV/2))
 ROTATION_RIGHT_15: Final = Vector2(cos(FOV/4), -sin(FOV/4))
 
-# higher value gives a smaller weight for the two between directions
+# higher value gives a smaller weight for the two in between directions
 IN_BETWEEN_DIRECTION_WEIGHT_SCALING: Final = 5
 
 # higher value gives a smaller base weight for the forward direction
@@ -75,7 +75,7 @@ class Pheromone_Grid:
     len: int
     grid_array: np.ndarray[int, np.dtype[np.int32]]
     surface: Surface
-    # TODO : Add color map function and add as functions so that we can have different for deferent pheromones
+    # TODO : Add color map function and add as functions so that we can have different for different pheromones
 
     def __init__(self):
         self.diffusion_timer = 0
