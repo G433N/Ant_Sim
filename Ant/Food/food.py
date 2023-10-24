@@ -2,7 +2,7 @@
 
 from typing import Final
 from pygame import Surface, Vector2, draw
-from Ant.Pheromone.add_pheromone import add_pheromone
+from Ant.Pheromone.add_pheromone import Add_Pheromone
 
 from Util.chunked_data import ChunkedData
 from Util.globals import WORLD_SIZE
@@ -23,10 +23,10 @@ PHEROMONE_DROP_TIMER: Final = 0.01
 
 class Food:
     position: ChunkedData[Vector2]
-    spawn_pheromone: add_pheromone  # TODO : Why this???
+    spawn_pheromone: Add_Pheromone  # TODO : Why this???
     timer: float
 
-    def __init__(self, spawn_pheromone: add_pheromone) -> None:
+    def __init__(self, spawn_pheromone: Add_Pheromone) -> None:
         self.position = ChunkedData(WORLD_SIZE)
         self.spawn_pheromone = spawn_pheromone
         self.timer = 0

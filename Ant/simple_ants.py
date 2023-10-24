@@ -4,8 +4,8 @@ from random import random
 from typing import Final
 from pygame import Surface, Vector2, draw
 from Ant.Food.food import Food
-from Ant.Pheromone.choose_direction import choose_direction
-from Ant.Pheromone.add_pheromone import add_pheromone
+from Ant.Pheromone.choose_direction import Choose_Direction
+from Ant.Pheromone.add_pheromone import Add_Pheromone
 from Ant.ant import Ant
 from Util.chunked_data import ChunkedData
 from Util.globals import WORLD_SIZE
@@ -59,11 +59,12 @@ class SimpleAnts(Ant):
     state: list[AntState]
 
     # TODO : This need to be a class instead with multiple named add_pheromone function, for multiple pheromones support
-    spawn_pheromone: add_pheromone  # Name Add_Pheromones_Class or something better
+    # Name Add_Pheromones_Class or something better
+    spawn_pheromone: dict[str, Add_Pheromone]
     food: Food
-    wander_direction: choose_direction
+    wander_direction: dict[str, Choose_Direction]
 
-    def __init__(self, spawn_pheromone: add_pheromone, wander_direction: choose_direction) -> None:
+    def __init__(self, spawn_pheromone: dict[str, Add_Pheromone], wander_direction: dict[str, Choose_Direction]) -> None:
         self.position = list()
         self.velocity = list()
         self.acceleration = list()
@@ -116,7 +117,7 @@ class SimpleAnts(Ant):
                     distance = self.wandering_timer[i]
 
                     if distance >= WANDER_DELAY:  # TODO : Make random ant movement sexier
-                        goal_direction.xy = self.wander_direction(
+                        goal_direction.xy = self.wander_direction["home"](
                             goal_direction.xy, position)
                         self.wandering_timer[i] = distance % WANDER_DELAY
 
@@ -146,7 +147,7 @@ class SimpleAnts(Ant):
                 self.pheromone_distance[i] = distance % PHEROMONE_DROP_DISTANCE
                 # TODO : Switch function in Add_Pheromones_Class depending on state
                 # TODO : We can add support for different timers and behaviors per pheromone later
-                self.spawn_pheromone(position.copy())
+                self.spawn_pheromone["home"](position.copy())
 
     def draw(self, screen: Surface):
         for position, velocity in zip(self.position, self.velocity):

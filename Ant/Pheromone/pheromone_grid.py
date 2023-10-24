@@ -1,8 +1,11 @@
-
+from __future__ import annotations
 from dataclasses import dataclass
 from math import cos, prod, pi, sin
 import random
-from typing import Any, Final
+from typing import Any, Callable, Final
+
+from Ant.Pheromone.add_pheromone import Add_Pheromone
+from Ant.Pheromone.choose_direction import Choose_Direction
 
 try:
     import numpy as np
@@ -68,6 +71,48 @@ FORWARD_BASE_WEIGHT_SCALING: Final = 20
 ###############################################################
 
 
+class PheromoneHandler:
+
+    pheromones: dict[str, Pheromone_Grid]
+
+    def __init__(self, pheromones: dict[str, Pheromone_Grid]) -> None:
+        self.pheromones = pheromones
+        self._data = pheromones.values()
+
+    def update(self, dt: float):
+        for pheromone in self._data:
+            pheromone.update(dt)
+
+    def add_functions(self) -> dict[str, Add_Pheromone]:
+        return {k: v.add for k, v in self.pheromones.items()}
+
+    def direction_functions(self) -> dict[str, Choose_Direction]:
+        return {k: v.get_new_direction for k, v in self.pheromones.items()}
+
+    def draw(self, surface: Surface):
+        array = surfarray.pixels3d(surface)  # type: ignore
+        r = np.zeros(GRID_SIZE, np.int32)
+        g = np.zeros(GRID_SIZE, np.int32)
+        b = np.zeros(GRID_SIZE, np.int32)
+        l = len(self._data)
+
+        for pheromone in self._data:
+            _r, _g, _b = pheromone.shader()
+            r += _r
+            g += _g
+            b += _b
+
+        r //= l
+        g //= l
+        b //= l
+
+        for x in range(CELL_SIZE):
+            for y in range(CELL_SIZE):
+                array[y::CELL_SIZE, x::CELL_SIZE, 0] = r
+                array[y::CELL_SIZE, x::CELL_SIZE, 1] = g
+                array[y::CELL_SIZE, x::CELL_SIZE, 2] = b
+
+
 @dataclass(slots=True)
 class Pheromone_Grid:
     diffusion_timer: float
@@ -113,22 +158,14 @@ class Pheromone_Grid:
     def __str__(self):
         return f"\n{self.grid_array}\n"
 
-    def draw(self):
-        # TODO : Change this to take in surfarray (Numpy Array) and return one so we can blend multiple together
-        # TODO : All of them need to start on the same color if we want different colors
-        array = surfarray.pixels3d(self.surface)  # type: ignore
+    def shader(self):
 
         a = np.fmin(self.grid_array//COLOR_SCALING, 255)
         c = (4*a)//5
         r = c
         g = np.fmax(120-a, 0)
         b = 50 + c
-        for x in range(CELL_SIZE):
-            for y in range(CELL_SIZE):
-                array[y::CELL_SIZE, x::CELL_SIZE, 0] = r
-                array[y::CELL_SIZE, x::CELL_SIZE, 1] = g
-                array[y::CELL_SIZE, x::CELL_SIZE, 2] = b
-        return self.surface
+        return r, g, b
 
     def sum(self):
         return sum(self.grid_array)
