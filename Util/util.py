@@ -14,6 +14,14 @@ def random_vector(bounding_box: Vector2) -> Vector2:
     return Vector2(x, y)
 
 
+def rotate_normal(norm_dir: Vector2, rotation_vector: Vector2):
+    """rotates the first vector by the second (both needs to be normalized)"""
+    return Vector2(
+        norm_dir.x * rotation_vector.x - norm_dir.y * rotation_vector.y,
+        norm_dir.y * rotation_vector.x + norm_dir.x * rotation_vector.y
+    )
+
+
 def bounds(position: Vector2):
     x, y = position
     max_x, max_y = WORLD_SIZE
