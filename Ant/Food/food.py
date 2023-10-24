@@ -23,13 +23,9 @@ PHEROMONE_DROP_TIMER: Final = 0.01
 
 class Food:
     position: ChunkedData[Vector2]
-    spawn_pheromone: Add_Pheromone  # TODO : Why this???
-    timer: float
 
-    def __init__(self, spawn_pheromone: Add_Pheromone) -> None:
+    def __init__(self) -> None:
         self.position = ChunkedData(WORLD_SIZE)
-        self.spawn_pheromone = spawn_pheromone
-        self.timer = 0
 
     def add(self, position: Vector2, amount: int, radius: float):
         for _ in range(amount):
@@ -39,10 +35,3 @@ class Food:
     def draw(self, surface: Surface):
         for position in self.position.get_data():
             draw.circle(surface, "yellow", position, FOOD_SIZE)
-
-    def update(self, dt: float):
-        self.timer += dt
-        if self.timer >= PHEROMONE_DROP_TIMER:
-            self.timer %= PHEROMONE_DROP_TIMER
-            for position in self.position.get_data():
-                self.spawn_pheromone(position.copy())

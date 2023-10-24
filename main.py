@@ -3,6 +3,7 @@ import pygame
 from Ant.Food.food import Food
 from Ant.Nest.ant_nests import AntNets
 from Ant.Pheromone.pheromone_grid import Pheromone_Grid, PheromoneHandler
+from Ant.Pheromone.pheromones import Pheromones
 from Ant.simple_ants import SimpleAnts
 from Util.chunked_data import ChunkedData
 from Util.globals import SCREEN_SIZE, WORLD_SIZE
@@ -17,17 +18,14 @@ running = True
 font = pygame.font.SysFont("Arial", 18, bold=True)
 
 # TODO : Make this an tuple, with we loop over every frame
-home_pheromones = Pheromone_Grid()
-pheromone = PheromoneHandler({
-    "home": home_pheromones,
-})
 
-ants = SimpleAnts(pheromone.add_functions(), pheromone.direction_functions())
+pheromones = Pheromones()
+ants = SimpleAnts(pheromones.add)
 nests = AntNets(WORLD_SIZE, ants.add)
 nests.add(Vector2(900, 300))
 
 
-food = Food(home_pheromones.add)
+food = Food()
 food.add(WORLD_SIZE/4, 20, 100)
 food.add(Vector2(100, 500), 20, 100)
 food.add(WORLD_SIZE/4 + Vector2(700, 0), 20, 100)
@@ -58,17 +56,15 @@ while running:
             elif event.key == pygame.K_a:
                 show_ant = not show_ant
 
-    home_pheromones.update(dt)
+    pheromones.update(dt)
     ants.update(dt)
     nests.update(dt)
-    food.update(dt)
 
     if draw_time >= 1/FPS:
 
+        screen.fill(pygame.Color(0, 120, 50))
         if show_pheromones:
-            pheromone.draw(screen)
-        else:
-            screen.fill(pygame.Color(0, 120, 50))
+            pheromones.draw(screen)
 
         if show_ant:
             nests.draw(screen)
